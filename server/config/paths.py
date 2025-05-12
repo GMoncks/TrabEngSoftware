@@ -7,3 +7,6 @@ UTILS_FOLDER = os.path.join(BASE_PATH, 'utils')
 
 DATABASE_FOLDER = os.path.join(UTILS_FOLDER, 'database')
 DATABASE_PATH = os.path.join(DATABASE_FOLDER, 'sqlite_database.db')
+
+SERVER_PORT = 8000
+SERVER_BASE_URL = '/api'

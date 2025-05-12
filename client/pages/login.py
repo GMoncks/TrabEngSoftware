@@ -5,7 +5,7 @@ import dash_bootstrap_components as dbc
 import time
 
 from main import (
-     db_comm,
+     login_requests,
      usuario_logado
 )
 
@@ -63,7 +63,7 @@ def callback_login(n_clicks, user, password):
         try:
             if n_clicks:
                 time.sleep(1)  # Simulando um atraso para o carregamento
-                user_info = db_comm.validar_login(user, password)
+                user_info = login_requests.validar_login(user, password)
                 if user_info:
                     usuario_logado.login(
                         user_info["id"],
@@ -91,8 +91,8 @@ def callback_cadastro(n_clicks, user, password):
     try:
         if n_clicks:
             time.sleep(1)  # Simulando um atraso para o carregamento
-            if not db_comm.validar_usuario(user):
-                db_comm.cadastrar_usuario(user, password)
+            if not login_requests.validar_usuario(user):
+                login_requests.cadastrar_usuario(user, password)
                 return "Usuário cadastrado com sucesso!"
             else:
                 return "Usuário já existe."
@@ -108,7 +108,7 @@ def callback_cadastro(n_clicks, user, password):
 def callback_trocar_tela(n_clicks):
     if n_clicks == "Login bem-sucedido!":
         time.sleep(1)
-        return "/page1"
+        return "/home"
     else:
         return no_update
     

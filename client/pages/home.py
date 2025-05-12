@@ -2,38 +2,35 @@ from dash import (
     register_page,dcc, html, callback, Input, Output, State, no_update
 )
 import dash_bootstrap_components as dbc
-import time
 
 from main import (
-    db_comm,
     usuario_logado
 )
 
 
 register_page(
     __name__,
-    path="/page1",
-    title="page1",
-    name="page1",
+    path="/home",
+    title="home",
+    name="home",
 )
 
 layout = dbc.Container(
-    id="page1-container",
-    children = "Page 1",
+    id="home-container",
+    children = "Home",
     )
 
 @callback(
-    Output("page1-container", "children"),
+    Output("home-container", "children"),
     Input("url", "pathname"),
 )
-def callback_atualizar_page1(pathname):
-    if pathname == "/page1":
+def callback_atualizar_home(pathname):
+    if pathname == "/home":
         return [
             html.H1("Martelo Amigo"),
             html.Hr(),
             html.H4("Informações do usuário"),
             html.P(f"Usuário logado: {usuario_logado.nome.title()}"),  
-            html.P(f"Tipo de acesso: {"Administrador" if usuario_logado.admin else "Morador"}"),	
             html.P(f"Data do último acesso: {usuario_logado.dt_ultimo_acesso if usuario_logado.dt_ultimo_acesso else 'Nunca'}"),
             html.P(f"Data de cadastro: {usuario_logado.dt_cadastro}"),
             html.P(f"ID do usuário: {usuario_logado.id_usuario}"),

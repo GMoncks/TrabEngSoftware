@@ -15,7 +15,6 @@ class ComunicacaoBanco:
     def __init__(self, db_path):
         self.db_path = db_path
 
-
     def cadastrar_usuario(self, nome, senha):
         if not nome or not senha:
             raise ValueError("Nome e senha não podem ser vazios.")
