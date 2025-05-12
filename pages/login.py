@@ -57,15 +57,23 @@ layout = dbc.Container(
     Input("login-button", "n_clicks"),
     State("input-user", "value"),
     State("input-password", "value"),
-    State("url", "pathname"),
     prevent_initial_call=True
 )
-def callback_login(n_clicks, user, password, caminho_atual):
+def callback_login(n_clicks, user, password):
         try:
             if n_clicks:
                 time.sleep(1)  # Simulando um atraso para o carregamento
-                if db_comm.validar_login(user, password):
-                    usuario_logado.login(user, user, password)
+                user_info = db_comm.validar_login(user, password)
+                if user_info:
+                    usuario_logado.login(
+                        user_info["id"],
+                        user_info["dt_cadastro"],
+                        user_info["nome"],
+                        user_info["senha"],
+                        user_info["score"],
+                        user_info["admin"],
+                        user_info["dt_ultimo_acesso"]
+                        )
                     return "Login bem-sucedido!"
                 else:
                     return "Usuário ou senha incorretos."
