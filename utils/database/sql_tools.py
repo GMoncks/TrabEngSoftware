@@ -1,6 +1,7 @@
 import hashlib
 import pandas as pd
 import sqlite3
+import time
 
 # O nome sempre será em letras minúsculas
 # Senha será em hash
@@ -24,6 +25,8 @@ class ComunicacaoBanco:
             cursor = conn.cursor()
             cursor.execute('INSERT INTO "USUARIOS" (NOME, SENHA) VALUES (?, ?)',
                         (nome, senha_codificada))
+            cursor.execute('UPDATE "USUARIOS" SET DT_CADASTRO=? WHERE NOME=? AND SENHA=?',
+                        (time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()), nome, senha_codificada))
             conn.commit()
 
     def validar_login(self, nome, senha):
@@ -37,7 +40,20 @@ class ComunicacaoBanco:
                         (nome, senha_codificada))
             query_return = cursor.fetchone()
             if query_return:
-                return True
+                user_info = {
+                    "id": query_return[0],
+                    "dt_cadastro": query_return[1],
+                    "nome": query_return[2],
+                    "senha": query_return[3],
+                    "score": query_return[4],
+                    "admin": query_return[5],
+                    "dt_ultimo_acesso": query_return[6]
+                }
+                # Atualiza o último login
+                cursor.execute('UPDATE "USUARIOS" SET DT_ULTIMO_ACESSO=? WHERE ID_USUARIO=?',
+                            (time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()), user_info["id"]))
+                conn.commit()
+                return user_info
             else:
                 return False
 
