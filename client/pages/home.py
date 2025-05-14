@@ -1,5 +1,5 @@
 from dash import (
-    register_page,dcc, html, callback, Input, Output, State, no_update
+    register_page, dcc, html, callback, Input, Output, State, no_update
 )
 import dash_bootstrap_components as dbc
 

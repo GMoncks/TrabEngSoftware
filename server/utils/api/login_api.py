@@ -5,7 +5,7 @@ from utils.database.sql_tools import ComunicacaoBanco
 login = Blueprint('login', __name__)
 
 @login.route('/login/cadastrar_usuario', methods=['POST'])
-def cadastrar_usuario():  
+def cadastrar_usuario():
     try:  
         db_comm = ComunicacaoBanco(DATABASE_PATH)
         db_comm.cadastrar_usuario(

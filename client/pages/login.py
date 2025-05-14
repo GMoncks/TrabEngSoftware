@@ -35,11 +35,7 @@ layout = dbc.Container(
                         dbc.Col(
                             dbc.Button("Entrar", id="login-button", color="primary", className="w-100"),
                             width=6
-                        ),
-                        dbc.Col(
-                            dbc.Button(children="Cadastrar", id="signup-button", color="secondary", className="w-100"),
-                            width=6
-                        ),
+                        )
                     ]),
                     dcc.Loading(
                         html.Div(id="login-output", className="mt-3", style={'min-height':"20px"})
@@ -83,27 +79,6 @@ def callback_login(n_clicks, user, password):
                     return "Usuário ou senha incorretos."
         except Exception as e:
             return f"Erro ao fazer login: {e}"
-
-@callback(
-    Output("login-output", "children", allow_duplicate=True),
-    Input("signup-button", "n_clicks"),
-    State("input-user", "value"),
-    State("input-password", "value"),
-    prevent_initial_call=True
-)
-def callback_cadastro(n_clicks, user, password):
-    try:
-        if n_clicks:
-            time.sleep(1)  # Simulando um atraso para o carregamento
-            exists = login_requests.validar_usuario(user)
-            if not exists["exists"]:
-                login_requests.cadastrar_usuario(user, password)
-                return "Usuário cadastrado com sucesso!"
-            else:
-                return "Usuário já existe."
-
-    except Exception as e:
-        return f"Erro ao cadastrar usuário: {e}"
 
 @callback(
     Output('url', 'pathname', allow_duplicate=True),

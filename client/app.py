@@ -1,4 +1,3 @@
-
 import dash
 from dash import (
     html,
@@ -32,7 +31,6 @@ app.layout = html.Div(
         page_container,
     ]
 )
-
 
 @callback(
     Output("url", "pathname"),

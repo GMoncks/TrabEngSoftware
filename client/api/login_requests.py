@@ -23,7 +23,7 @@ class LoginRequest:
         return self.request.post(self.validateLoginUrl, {'email':email, 'password':password})
 
     def validar_usuario(self, nome):
-        return self.request.get(self.validateUserUrl, {'name':nome})
+        return self.request.get(self.validateUserUrl, {'email':nome})
 
     def cadastrar_item():
         pass

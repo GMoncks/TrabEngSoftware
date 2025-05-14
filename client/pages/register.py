@@ -68,12 +68,13 @@ layout = dbc.Container([
 
     html.Hr(),
 
-    html.Div(id="output", className="mt-3")
+    html.Div([dbc.Alert(id="alert")], id="output", className="mt-3")
 ], fluid=True)
 
 
 @callback(
-    Output("output", "children"),
+    Output("alert", "children"),
+    Output("alert", "color"),
     Input("btn-submit", "n_clicks"),
     State("input-email", "value"),
     State("input-password", "value"),
@@ -83,28 +84,35 @@ layout = dbc.Container([
     State("input-phone", "value"),
     prevent_initial_call=True
 )
-def cadastrar(n_clicks, email, password, home_id, name, cpf, phone):
-    
-    login_requests.cadastrar_usuario(email, password, home_id, name, cpf, phone)
-    
-    return dbc.Alert([
-        html.H5("Cadastro realizado com sucesso!", className="alert-heading"),
-        html.P(f"Identificação: {id}"),
-        html.P(f"Nome: {name}"),
-        html.P(f"CPF: {cpf}"),
-        html.P(f"Email: {email}"),
-        html.P(f"Telefone: {phone}")
-    ], color="success")
+def cadastrar(n_clicks, email, password, home_id, name, cpf, phone):    
+    try:
+        if n_clicks:
+            exists = login_requests.validar_usuario(email)
+            if not exists["exists"]:
+                login_requests.cadastrar_usuario(email, password, home_id, name, cpf, phone)
+                return [
+                    html.H5("Cadastro realizado com sucesso!", className="alert-heading"),
+                    html.P(f"Identificação: {home_id}"),
+                    html.P(f"Nome: {name}"),
+                    html.P(f"CPF: {cpf}"),
+                    html.P(f"Email: {email}"),
+                    html.P(f"Telefone: {phone}")
+                ], "success"
+            else:
+                return [html.H5("Usuário já existe.")], "danger"
+
+    except Exception as e:
+        return [html.H5(f"Erro ao cadastrar usuário: {e}")], "danger"
     
 
 @callback(
     Output('url', 'pathname', allow_duplicate=True),
-    Input('output', 'children'),
+    Input('alert', 'color'),
     prevent_initial_call=True
 )
-def callback_trocar_tela(children):
-        if children:
-            time.sleep(3)
+def callback_trocar_tela(color):
+        if color=="success":
+            time.sleep(2)
             return "/home"
         return no_update
         
