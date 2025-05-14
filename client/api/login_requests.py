@@ -7,11 +7,20 @@ class LoginRequest:
         self.validateUserUrl = '/login/validar_usuario'
         self.request = request_helper(baseURL)
 
-    def cadastrar_usuario(self, nome, senha):
-        return self.request.post(self.createUserUrl, {'name':nome, 'password':senha})
+    def cadastrar_usuario(self, email, password, home_id, name, cpf, phone):
+        return self.request.post(self.createUserUrl, 
+            {
+                'email':email,
+                'password':password,
+                'home_id':home_id,
+                'name':name,
+                'cpf':cpf,
+                'phone':phone,                                    
+            }
+        )
 
-    def validar_login(self, nome, senha):
-        return self.request.post(self.validateLoginUrl, {'name':nome, 'password':senha})
+    def validar_login(self, email, password):
+        return self.request.post(self.validateLoginUrl, {'email':email, 'password':password})
 
     def validar_usuario(self, nome):
         return self.request.get(self.validateUserUrl, {'name':nome})

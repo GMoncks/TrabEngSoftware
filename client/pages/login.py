@@ -68,11 +68,15 @@ def callback_login(n_clicks, user, password):
                     usuario_logado.login(
                         user_info["id"],
                         user_info["dt_cadastro"],
-                        user_info["nome"],
+                        user_info["email"],
                         user_info["senha"],
+                        user_info["name"],
+                        user_info["home_id"],
+                        user_info["cpf"],
+                        user_info["phone"],
                         user_info["score"],
                         user_info["admin"],
-                        user_info["dt_ultimo_acesso"]
+                        user_info["dt_last_acess"]
                         )
                     return "Login bem-sucedido!"
                 else:

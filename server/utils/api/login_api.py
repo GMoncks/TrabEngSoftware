@@ -8,7 +8,14 @@ login = Blueprint('login', __name__)
 def cadastrar_usuario():  
     try:  
         db_comm = ComunicacaoBanco(DATABASE_PATH)
-        db_comm.cadastrar_usuario(request.form['name'], request.form['password'])
+        db_comm.cadastrar_usuario(
+            request.form['email'],
+            request.form['password'],
+            request.form['home_id'],
+            request.form['name'],
+            request.form['cpf'],
+            request.form['phone']
+            )
         return {}
     except Exception as e:
         return {"error":str(e)}, 500
@@ -17,7 +24,7 @@ def cadastrar_usuario():
 def validar_login():
     try:  
         db_comm = ComunicacaoBanco(DATABASE_PATH)
-        return db_comm.validar_login(request.form['name'], request.form['password'])
+        return db_comm.validar_login(request.form['email'], request.form['password'])
     except Exception as e:
         return {"error":str(e)}, 500
 
@@ -25,7 +32,7 @@ def validar_login():
 def validar_usuario():
     try:  
         db_comm = ComunicacaoBanco(DATABASE_PATH)
-        return db_comm.validar_usuario(request.args['name'])
+        return db_comm.validar_usuario(request.args['email'])
     except Exception as e:
         return {"error":str(e)}, 500
 

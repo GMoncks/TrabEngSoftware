@@ -15,38 +15,40 @@ class ComunicacaoBanco:
     def __init__(self, db_path):
         self.db_path = db_path
 
-    def cadastrar_usuario(self, nome, senha):
-        if not nome or not senha:
-            raise ValueError("Nome e senha não podem ser vazios.")
-        senha_codificada = codificar_senha(str(senha))
-        nome = nome.lower()
+    def cadastrar_usuario(self, email, password, home_id, name, cpf, phone):
+        if not email or not password:
+            raise ValueError("Email e senha não podem ser vazios.")
+        senha_codificada = codificar_senha(str(password))
+        email = email.lower()
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('INSERT INTO "USUARIOS" (NOME, SENHA) VALUES (?, ?)',
-                        (nome, senha_codificada))
-            cursor.execute('UPDATE "USUARIOS" SET DT_CADASTRO=? WHERE NOME=? AND SENHA=?',
-                        (time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()), nome, senha_codificada))
+            cursor.execute('INSERT INTO "USUARIOS" ("EMAIL", "SENHA", "HOME_ID", "NOME", "CPF", "PHONE") VALUES (?, ?, ?, ?, ?, ?)',
+                        (email, senha_codificada, home_id, name, cpf, phone))
             conn.commit()
 
-    def validar_login(self, nome, senha):
-        if not nome or not senha:
-            raise ValueError("Nome e senha não podem ser vazios.")
-        senha_codificada = codificar_senha(str(senha))
-        nome = nome.lower()
+    def validar_login(self, email, password):
+        if not email or not password:
+            raise ValueError("Email e senha não podem ser vazios.")
+        senha_codificada = codificar_senha(str(password))
+        email = email.lower()
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('SELECT * FROM "USUARIOS" WHERE NOME=? AND SENHA=?',
-                        (nome, senha_codificada))
+            cursor.execute('SELECT * FROM "USUARIOS" WHERE EMAIL=? AND SENHA=?',
+                        (email, senha_codificada))
             query_return = cursor.fetchone()
             if query_return:
                 user_info = {
                     "id": query_return[0],
                     "dt_cadastro": query_return[1],
-                    "nome": query_return[2],
+                    "email": query_return[2],
                     "senha": query_return[3],
-                    "score": query_return[4],
-                    "admin": query_return[5],
-                    "dt_ultimo_acesso": query_return[6]
+                    "name": query_return[4],
+                    "home_id": query_return[5],
+                    "cpf": query_return[6],
+                    "phone": query_return[7],
+                    "score": query_return[8],
+                    "admin": query_return[9],
+                    "dt_last_acess": query_return[10]
                 }
                 # Atualiza o último login
                 cursor.execute('UPDATE "USUARIOS" SET DT_ULTIMO_ACESSO=? WHERE ID_USUARIO=?',
@@ -56,13 +58,13 @@ class ComunicacaoBanco:
             else:
                 raise Exception("Usuario não existe. Verifique o login e senha.")
 
-    def validar_usuario(self, nome):
-        if not nome:
-            raise ValueError("Nome não pode ser vazio.")
-        nome = nome.lower()
+    def validar_usuario(self, email):
+        if not email:
+            raise ValueError("Email não pode ser vazio.")
+        email = email.lower()
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('SELECT * FROM "USUARIOS" WHERE NOME=?', (nome,))
+            cursor.execute('SELECT * FROM "USUARIOS" WHERE EMAIL=?', (email,))
             usuario = cursor.fetchone()
             if usuario:
                 return {"exists":True}

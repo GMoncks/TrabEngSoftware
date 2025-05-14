@@ -39,16 +39,9 @@ app.layout = html.Div(
     Input("url", "pathname"),
 )
 def callback_login_check(pathname):
-    if usuario_logado.logado and pathname != "/":
-        print(f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} - Usuário logado: {usuario_logado.nome}")
-        return no_update  # Permite que o usuário continue na página atual
-    elif pathname == "/":
-        print(f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} - Usuário não logado, continuando na página de login")
-        return no_update  # Permite que o usuário permaneça na página de login
-    else:
-        print(f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} - Usuário não logado, redirecionando para a página de login")
-        return "/"  # Redireciona para a página de login
-
+    if not usuario_logado.logado and pathname != "/":
+        return "/"
+    return no_update
 
 if __name__ == "__main__":
     app.run(debug=True, port=8050)
