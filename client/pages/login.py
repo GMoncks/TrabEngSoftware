@@ -91,7 +91,8 @@ def callback_cadastro(n_clicks, user, password):
     try:
         if n_clicks:
             time.sleep(1)  # Simulando um atraso para o carregamento
-            if not login_requests.validar_usuario(user):
+            exists = login_requests.validar_usuario(user)
+            if not exists["exists"]:
                 login_requests.cadastrar_usuario(user, password)
                 return "Usuário cadastrado com sucesso!"
             else:

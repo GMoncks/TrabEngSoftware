@@ -8,15 +8,24 @@ class request_helper:
         
     def post(self, apiUrl, data):
         requestUrl = self.build_request(apiUrl)
-        return requests.post(requestUrl, data=data).json()
+        result = requests.post(requestUrl, data=data)
+        if result.status_code != 200:
+            raise Exception(result.json())
+        return result.json()
         
     def get(self, apiUrl):
         requestUrl = self.build_request(apiUrl)
-        return requests.get(requestUrl).json()
+        result = requests.get(requestUrl)
+        if result.status_code != 200:
+            raise Exception(result.json())
+        return result.json()
     
     def get(self, apiUrl, params):
         requestUrl = self.build_request(apiUrl, params)
-        return requests.get(requestUrl).json()
+        result = requests.get(requestUrl)
+        if result.status_code != 200:
+            raise Exception(result.json())
+        return result.json()
 
     def build_request(self, apiUrl, params=None):
         if params != None:

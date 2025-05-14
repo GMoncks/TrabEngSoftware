@@ -54,7 +54,7 @@ class ComunicacaoBanco:
                 conn.commit()
                 return user_info
             else:
-                return False
+                raise Exception("Usuario não existe. Verifique o login e senha.")
 
     def validar_usuario(self, nome):
         if not nome:
@@ -65,9 +65,9 @@ class ComunicacaoBanco:
             cursor.execute('SELECT * FROM "USUARIOS" WHERE NOME=?', (nome,))
             usuario = cursor.fetchone()
             if usuario:
-                return True
+                return {"exists":True}
             else:
-                return False
+                return {"exists":False}
 
     def cadastrar_item():
         pass
