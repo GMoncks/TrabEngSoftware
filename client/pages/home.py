@@ -15,10 +15,10 @@ register_page(
     name="home",
 )
 
-layout = dbc.Container(
-    id="home-container",
-    children = "Home",
-    )
+layout = dbc.Container([
+    dbc.Container(id="home-container"),       
+    dbc.Button("Cadastrar", id="btn-home-register", color="primary", className="me-2")
+])
 
 @callback(
     Output("home-container", "children"),
@@ -42,8 +42,6 @@ def callback_atualizar_home(pathname):
         ]
         if usuario_logado.admin:
             pages.append(html.P(f"Administrador"))
-            
-        pages.append(dbc.Button("Cadastrar", id="btn-home-register", color="primary", className="me-2"))
         
         return pages
 
