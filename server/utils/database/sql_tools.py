@@ -71,15 +71,18 @@ class ComunicacaoBanco:
             else:
                 return {"exists":False}
 
+    def cadastrar_ferramenta(self, nome_ferramenta, dono, descricao = None):
+        raise NotImplementedError("Função cadastrar_ferramenta ainda não implementada.")
+    
+    def validar_ferramenta(self, nome_ferramenta, dono):
+        raise NotImplementedError("Função validar_ferramenta ainda não implementada.")
+
     def busca_itens(self, nome_ferramenta: str,  nome_dono: str, data_desejada):
         #TODO colocar data_desejada com type hint apropriado para data
         #TODO fazer query com filtros
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM ")
-    
-    def cadastrar_item():
-        pass
 
 
 
