@@ -71,6 +71,13 @@ class ComunicacaoBanco:
             else:
                 return {"exists":False}
 
+    def busca_itens(self, nome_ferramenta: str,  nome_dono: str, data_desejada):
+        #TODO colocar data_desejada com type hint apropriado para data
+        #TODO fazer query com filtros
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM ")
+    
     def cadastrar_item():
         pass
 
