@@ -22,8 +22,8 @@ class ComunicacaoBanco:
         email = email.lower()
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('INSERT INTO "USUARIOS" ("DT_CADASTRO", "EMAIL", "SENHA", "HOME_ID", "NOME", "CPF", "PHONE") VALUES (?, ?, ?, ?, ?, ?, ?)',
-                        (time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()), email, senha_codificada, home_id, name, cpf, phone))
+            cursor.execute('INSERT INTO "USUARIOS" ("EMAIL", "SENHA", "HOME_ID", "NOME", "CPF", "PHONE") VALUES (?, ?, ?, ?, ?, ?, ?)',
+                        (email, senha_codificada, home_id, name, cpf, phone))
             conn.commit()
 
     def validar_login(self, email, password):
