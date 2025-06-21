@@ -31,7 +31,7 @@ class ToolRequest:
 
         return [f for f in ferramentas if corresponde(f)]
     
-    def solicitar_emprestimo(nome_ferramenta, data_inicio, data_fim):
+    def solicitar_emprestimo(self, nome_ferramenta, data_inicio, data_fim):
         try:
             # Aqui você enviaria para a API
             print(f"Enviando empréstimo: {nome_ferramenta} de {data_inicio} até {data_fim}")
