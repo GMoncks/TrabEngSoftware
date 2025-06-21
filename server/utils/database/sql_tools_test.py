@@ -198,7 +198,7 @@ def test_checar_atrasos_returns_none_for_no_overdue(banco):
     with sqlite3.connect(banco.db_path) as conn:
         conn.execute("UPDATE REGISTROS SET DT_RETORNO = ?", (time.strftime('%Y-%m-%d %H:%M:%S'),))
     result = banco.checar_atrasos(user_id)
-    assert result is False
+    assert result == [] 
 
 def test_validar_usuario_exists(banco):
     result = banco.validar_usuario("user1@example.com")
