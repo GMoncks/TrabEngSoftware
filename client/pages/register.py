@@ -1,13 +1,8 @@
-from dash import (
-    register_page, dcc, html, callback, Input, Output, State, no_update
-)
-import dash_bootstrap_components as dbc
+from dash import register_page
+from dash import html, callback, Input, Output, State, no_update
 import time
-
-from main import (
-    login_requests,
-    usuario_logado
-)
+from main import login_requests
+import dash_bootstrap_components as dbc
 
 register_page(
     __name__,
@@ -18,59 +13,58 @@ register_page(
 )
 
 layout = dbc.Container([
-    html.H2("Cadastro de Morador", className="my-4"),
+        html.H2("Cadastro de Morador", className="my-4"),
 
-    dbc.Form([
-        dbc.Row([
-            dbc.Col([
-                dbc.Label("Email"),
-                dbc.Input(id="input-email", type="email", placeholder="email@exemplo.com")
-            ])
-        ], className="mb-3"),
-        
-        dbc.Row([
-            dbc.Col([
-                dbc.Label("Senha"),
-                dbc.Input(id="input-password", type="password", placeholder="Senha")
-            ])
-        ], className="mb-3"),
+        dbc.Form([
+            dbc.Row([
+                dbc.Col([
+                    dbc.Label("Email"),
+                    dbc.Input(id="input-email", type="email", placeholder="email@exemplo.com")
+                ])
+            ], className="mb-3"),
+            
+            dbc.Row([
+                dbc.Col([
+                    dbc.Label("Senha"),
+                    dbc.Input(id="input-password", type="password", placeholder="Senha")
+                ])
+            ], className="mb-3"),
 
-        dbc.Row([
-            dbc.Col([
-                dbc.Label("Nome completo"),
-                dbc.Input(id="input-name", type="text", placeholder="Nome completo")
-            ])
-        ], className="mb-3"),
-        
-        dbc.Row([
-            dbc.Col([
-                dbc.Label("Identificação da casa/apartamento"),
-                dbc.Input(id="input-home_id", type="text", placeholder="Ex: Bloco B, Apto 101")
-            ])
-        ], className="mb-3"),
+            dbc.Row([
+                dbc.Col([
+                    dbc.Label("Nome completo"),
+                    dbc.Input(id="input-name", type="text", placeholder="Nome completo")
+                ])
+            ], className="mb-3"),
+            
+            dbc.Row([
+                dbc.Col([
+                    dbc.Label("Identificação da casa/apartamento"),
+                    dbc.Input(id="input-home_id", type="text", placeholder="Ex: Bloco B, Apto 101")
+                ])
+            ], className="mb-3"),
 
-        dbc.Row([
-            dbc.Col([
-                dbc.Label("CPF"),
-                dbc.Input(id="input-cpf", type="text", placeholder="000.000.000-00")
-            ])
-        ], className="mb-3"),
+            dbc.Row([
+                dbc.Col([
+                    dbc.Label("CPF"),
+                    dbc.Input(id="input-cpf", type="text", placeholder="000.000.000-00")
+                ])
+            ], className="mb-3"),
 
-        dbc.Row([
-            dbc.Col([
-                dbc.Label("Telefone"),
-                dbc.Input(id="input-phone", type="text", placeholder="(99) 99999-9999")
-            ])
-        ], className="mb-4"),
+            dbc.Row([
+                dbc.Col([
+                    dbc.Label("Telefone"),
+                    dbc.Input(id="input-phone", type="text", placeholder="(99) 99999-9999")
+                ])
+            ], className="mb-4"),
 
-        dbc.Button("Cadastrar", id="btn-submit", color="primary", className="me-2"),
-    ]),
+            dbc.Button("Cadastrar", id="btn-submit", color="primary", className="me-2"),
+        ]),
 
-    html.Hr(),
+        html.Hr(),
 
-    html.Div([dbc.Alert(id="alert")], id="output", className="mt-3")
-], fluid=True)
-
+        html.Div([dbc.Alert(id="alert")], id="output", className="mt-3")
+    ], fluid=True)
 
 @callback(
     Output("alert", "children"),
