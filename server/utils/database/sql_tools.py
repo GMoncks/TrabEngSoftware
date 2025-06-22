@@ -1,35 +1,30 @@
 import hashlib
-import pandas as pd
 import sqlite3
 import time
 
-# O nome sempre será em letras minúsculas
-# Senha será em hash
-# botar docstring nas funções
-
-# TIRAR ESSA FUNÇÃO DO MODULO DATABASE, USAR A FUNCAO PRONTA SÓ OU N FAZER NADA?
 def codificar_senha(senha):
+    """Gera o hash SHA-256 da senha em texto plano."""
     return hashlib.sha256(senha.encode()).hexdigest()
 
 class ComunicacaoBanco:
     def __init__(self, db_path):
         """
-        Initialize the database communication object.
+        Inicializa o objeto de comunicação com o banco de dados.
 
         Args:
-            db_path (str): Path to the SQLite database file.
+            db_path (str): Caminho para o arquivo do banco SQLite.
         """
         self.db_path = db_path
-    
+
     def usuario_to_dict(self, query_return):
         """
-        Convert a user database row to a dictionary.
+        Converte uma linha da tabela USUARIOS em um dicionário.
 
         Args:
-            query_return (tuple): Row from the USUARIOS table.
+            query_return (tuple): Linha da tabela USUARIOS.
 
         Returns:
-            dict or None: Dictionary with user fields or None if input is None.
+            dict ou None: Dicionário com os campos do usuário ou None se não houver entrada.
         """
         if not query_return:
             return None
@@ -38,24 +33,24 @@ class ComunicacaoBanco:
             "dt_cadastro": query_return[1],
             "email": query_return[2],
             "senha": query_return[3],
-            "name": query_return[4],
-            "home_id": query_return[5],
+            "nome": query_return[4],
+            "id_casa": query_return[5],
             "cpf": query_return[6],
-            "phone": query_return[7],
+            "telefone": query_return[7],
             "inadimplente": query_return[8],
             "admin": query_return[9],
-            "dt_last_acess": query_return[10]
+            "dt_ultimo_acesso": query_return[10]
         }
-    
+
     def ferramenta_to_dict(self, query_return):
         """
-        Convert a tool (ferramenta) database row to a dictionary.
+        Converte uma linha da tabela FERRAMENTAS em um dicionário.
 
         Args:
-            query_return (tuple): Row from the FERRAMENTAS table.
+            query_return (tuple): Linha da tabela FERRAMENTAS.
 
         Returns:
-            dict or None: Dictionary with ferramenta fields or None if input is None.
+            dict ou None: Dicionário com os campos da ferramenta ou None se não houver entrada.
         """
         if not query_return:
             return None
@@ -65,18 +60,19 @@ class ComunicacaoBanco:
             "id_ferramenta": query_return[2],
             "nome": query_return[3],
             "descricao": query_return[4],
-            "dt_cadastro": query_return[5]
+            "dt_cadastro": query_return[5],
+            "ferramenta_disponivel": query_return[6]
         }
-    
+
     def registro_to_dict(self, query_return):
         """
-        Convert a loan/record (registro) database row to a dictionary.
+        Converte uma linha da tabela REGISTROS em um dicionário.
 
         Args:
-            query_return (tuple): Row from the REGISTROS table.
+            query_return (tuple): Linha da tabela REGISTROS.
 
         Returns:
-            dict or None: Dictionary with registro fields or None if input is None.
+            dict ou None: Dicionário com os campos do registro ou None se não houver entrada.
         """
         if not query_return:
             return None
@@ -84,236 +80,195 @@ class ComunicacaoBanco:
             "id_registro": query_return[0],
             "id_usuario": query_return[1],
             "id_ferramenta": query_return[2],
-            "dt_emprestimo_prevista": query_return[3],
-            "dt_devolucao_prevista": query_return[4],
-            "dt_retirada": query_return[5],
-            "dt_retorno": query_return[6],
-            "ferramenta_disponivel": query_return[7]
+            "dt_emprestimo": query_return[3],
+            "dt_devolucao": query_return[4],
+            "autorizado": query_return[5],
+            "finalizado": query_return[6]
         }
-        
-    def cadastrar_usuario(self, email, password, home_id, name, cpf, phone):
+
+    def cadastrar_usuario(self, email, password, id_casa, nome, cpf, telefone):
         """
-        Register a new user in the database.
+        Cadastra um novo usuário no banco de dados.
 
         Args:
-            email (str): User's email.
-            password (str): User's password (plain text, will be hashed).
-            home_id (str): Home identifier.
-            name (str): User's name.
-            cpf (str): User's CPF.
-            phone (str): User's phone number.
+            email (str): Email do usuário.
+            password (str): Senha em texto plano.
+            id_casa (str): Identificador da casa.
+            nome (str): Nome do usuário.
+            cpf (str): CPF do usuário.
+            telefone (str): Telefone do usuário.
 
         Returns:
             None
-
-        Workflow:
-            Call this method to create a new user before any login or reservation.
         """
         senha_codificada = codificar_senha(str(password))
         curr_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-        
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('INSERT INTO "USUARIOS" ("DT_CADASTRO", "EMAIL", "SENHA", "HOME_ID", "NOME", "CPF", "PHONE") VALUES (?, ?, ?, ?, ?, ?, ?)',
-                        (curr_time, email.lower(), senha_codificada, home_id, name, cpf, phone))
+            cursor.execute('INSERT INTO USUARIOS (DT_CADASTRO, EMAIL, SENHA, ID_CASA, NOME, CPF, TELEFONE) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                        (curr_time, email.lower(), senha_codificada, id_casa, nome, cpf, telefone))
             conn.commit()
-            
+
     def validar_login(self, email, password):
         """
-        Validate user login credentials.
+        Valida as credenciais de login do usuário.
 
         Args:
-            email (str): User's email.
-            password (str): User's password (plain text).
+            email (str): Email do usuário.
+            password (str): Senha em texto plano.
 
         Returns:
-            dict: User information if credentials are valid.
+            dict: Informações do usuário se as credenciais forem válidas.
 
         Raises:
-            Exception: If credentials are invalid.
-
-        Workflow:
-            Call this method to authenticate a user before allowing access to restricted actions.
+            Exception: Se as credenciais forem inválidas.
         """
         if not email or not password:
             raise ValueError("Email e senha não podem ser vazios.")
-    
         senha_codificada = codificar_senha(str(password))
-    
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('SELECT * FROM "USUARIOS" WHERE EMAIL=? AND SENHA=?',
+            cursor.execute('SELECT * FROM USUARIOS WHERE EMAIL=? AND SENHA=?',
                         (email.lower(), senha_codificada))
             query_return = cursor.fetchone()
-    
             if query_return:
                 user_info = self.usuario_to_dict(query_return)
-                # Atualiza o último login
-                cursor.execute('UPDATE "USUARIOS" SET DT_ULTIMO_ACESSO=? WHERE ID_USUARIO=?',
+                cursor.execute('UPDATE USUARIOS SET DT_ULTIMO_ACESSO=? WHERE ID_USUARIO=?',
                             (time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()), user_info["id_usuario"]))
                 conn.commit()
                 return user_info
-            
             else:
-                raise Exception("Usuario não existe. Verifique o login e senha.")
+                raise Exception("Usuário não existe. Verifique o login e senha.")
 
     def validar_usuario(self, email):
         """
-        Check if a user exists by email.
+        Verifica se um usuário existe pelo email.
 
         Args:
-            email (str): User's email.
+            email (str): Email do usuário.
 
         Returns:
-            dict: {"exists": True} if user exists, {"exists": False} otherwise.
+            dict: {"exists": True} se existe, {"exists": False} caso contrário.
         """
         if not email:
             raise ValueError("Email não pode ser vazio.")
-                
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('SELECT * FROM "USUARIOS" WHERE EMAIL=?', (email.lower(),))
+            cursor.execute('SELECT * FROM USUARIOS WHERE EMAIL=?', (email.lower(),))
             usuario = cursor.fetchone()
-            
-            if usuario:
-                return {"exists":True}
-            else:
-                return {"exists":False}
+            return {"exists": bool(usuario)}
 
-    def cadastrar_ferramenta(self, id_usuario: int, nome: str, descricao: str, email: str): 
+    def cadastrar_item(self, id_usuario: int, nome: str, descricao: str, email: str):
         """
-        Register a new tool (ferramenta) in the database.
+        Cadastra uma nova ferramenta no banco de dados.
 
         Args:
-            id_usuario (int): ID of the user registering the tool.
-            nome (str): Name of the tool.
-            descricao (str): Description of the tool.
-            email (str): Email of the owner.
+            id_usuario (int): ID do usuário dono.
+            nome (str): Nome da ferramenta.
+            descricao (str): Descrição da ferramenta.
+            email (str): Email do dono.
 
         Returns:
             None
-
-        Workflow:
-            Call this method to add a new tool before it can be reserved.
         """
         curr_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-        
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO FERRAMENTAS (ID_USUARIO, EMAIL, NOME, DESCRICAO, DT_CADASTRO) VALUES (?, ?, ?, ?, ?)", 
+            cursor.execute("INSERT INTO FERRAMENTAS (ID_USUARIO, EMAIL, NOME, DESCRICAO, DT_CADASTRO) VALUES (?, ?, ?, ?, ?)",
                            (id_usuario, email.lower(), nome.lower(), descricao, curr_time))
             conn.commit()
 
-    def buscar_ferramentas_disponiveis(self, nome: str, data_emprestimo: str, data_devolucao: str):
+    def buscar_itens_disponiveis(self, nome: str, data_emprestimo: str = None, data_devolucao: str = None):
         """
-        Search for available tools for a given period and name.
+        Busca ferramentas disponíveis para empréstimo pelo nome e período de interesse.
 
         Args:
-            nome (str): Tool name (partial or full, case-insensitive).
-            data_emprestimo (str): Desired start date (YYYY-MM-DD HH:MM:SS).
-            data_devolucao (str): Desired end date (YYYY-MM-DD HH:MM:SS).
+            nome (str): Nome (ou parte) da ferramenta.
+            data_emprestimo (str, optional): início do empréstimo (formato 'YYYY-MM-DD HH:MM:SS').
+            data_devolucao (str, optional): devolução prevista (formato 'YYYY-MM-DD HH:MM:SS').
 
         Returns:
-            list[dict]: List of available tools as dicts, or empty list if none found.
-
-        Workflow:
-            Use this method to show users which tools are available for reservation.
+            list[dict]: Lista de ferramentas disponíveis.
         """
-        if not data_emprestimo or not data_devolucao:
-            raise ValueError("Data de empréstimo e devolução não podem ser vazias.")
-
         with sqlite3.connect(self.db_path) as conn:
+            nome = '%' + (nome.lower() if nome else '') + '%'
             cursor = conn.cursor()
-            cursor.execute("""
-                SELECT * FROM FERRAMENTAS WHERE NOME LIKE ? AND ID_FERRAMENTA NOT IN 
-                (SELECT ID_FERRAMENTA FROM REGISTROS WHERE DT_EMPRESTIMO_PREVISTA <= ? AND DT_DEVOLUCAO_PREVISTA >= ?)""", 
-                ('%' + (nome.lower() if nome else '') + '%', data_devolucao, data_emprestimo  ))
+            
+            if not (data_emprestimo and data_devolucao):
+                cursor.execute('SELECT * FROM FERRAMENTAS WHERE NOME LIKE ?', (nome,))
+            else:
+                cursor.execute("""SELECT * FROM FERRAMENTAS WHERE NOME LIKE ? 
+                               AND ID_FERRAMENTA NOT IN 
+                               (SELECT ID_FERRAMENTA FROM REGISTROS WHERE DT_EMPRESTIMO <= ? AND DT_DEVOLUCAO >= ?)""", 
+                               (nome, data_devolucao, data_emprestimo))
 
             ferramentas_disponiveis = cursor.fetchall()
             return [self.ferramenta_to_dict(x) for x in ferramentas_disponiveis] if ferramentas_disponiveis else []
 
-    def remover_ferramenta(self, id_ferramenta: int):
+    def remover_item(self, id_ferramenta: int):
         """
-        Remove a tool from the database.
+        Remove uma ferramenta do banco de dados.
 
         Args:
-            id_ferramenta (int): Tool ID.
+            id_ferramenta (int): ID da ferramenta.
 
         Returns:
             None
 
         Raises:
-            Exception: If the tool does not exist.
-
-        Workflow:
-            Use this method to delete a tool (admin or owner only).
+            Exception: Se a ferramenta não existir.
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM FERRAMENTAS WHERE ID_FERRAMENTA=?", (id_ferramenta,))
-            
             if cursor.fetchone() is None:
                 raise Exception("Ferramenta não encontrada.")
-            
             cursor.execute("DELETE FROM FERRAMENTAS WHERE ID_FERRAMENTA=?", (id_ferramenta,))
             conn.commit()
 
-    def modificar_ferramenta(self, id_ferramenta: int, id_usuario_dono: int, nova_descricao: str):
+    def modificar_item(self, id_ferramenta: int, nova_descricao: str):
         """
-        Modify the description of a tool.
+        Modifica a descrição de uma ferramenta.
 
         Args:
-            id_ferramenta (int): Tool ID.
-            id_usuario_dono (int): ID of the user requesting the change.
-            nova_descricao (str): New description.
+            id_ferramenta (int): ID da ferramenta.
+            id_usuario_dono (int): ID do dono.
+            nova_descricao (str): Nova descrição.
 
         Returns:
             None
 
         Raises:
-            Exception: If the tool does not exist or user is not the owner.
-
-        Workflow:
-            Use this method to update tool details.
+            Exception: Se a ferramenta não existir ou não for do usuário.
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM FERRAMENTAS WHERE ID_FERRAMENTA=?", (id_ferramenta,))
-            ferramenta = cursor.fetchone()
             
-            if not ferramenta:
+            if not cursor.fetchone():
                 raise Exception("Ferramenta não encontrada.")
-            
-            if id_usuario_dono != self.ferramenta_to_dict(ferramenta)["id_usuario"]:
-                raise Exception("Apenas o dono ou administrador da ferramenta pode modificá-la.")
             
             cursor.execute('UPDATE FERRAMENTAS SET DESCRICAO=? WHERE ID_FERRAMENTA=?',
                         (nova_descricao, id_ferramenta))
             conn.commit()
 
-    def registrar_reserva(self, id_usuario: int, id_ferramenta: int, data_emprestimo: str, data_devolucao: str):
+    def reservar_item(self, id_usuario: int, id_ferramenta: int, dt_emprestimo: str, dt_devolucao: str):
         """
-        Register a reservation for a tool.
+        Registra uma solicitação de reserva de ferramenta.
 
         Args:
-            id_usuario (int): User ID making the reservation.
-            id_ferramenta (int): Tool ID.
-            data_emprestimo (str): Reservation start date (YYYY-MM-DD HH:MM:SS).
-            data_devolucao (str): Reservation end date (YYYY-MM-DD HH:MM:SS).
+            id_usuario (int): ID do usuário solicitante.
+            id_ferramenta (int): ID da ferramenta.
+            dt_emprestimo (str): Data/hora de início do empréstimo.
+            dt_devolucao (str): Data/hora de devolução prevista.
 
         Returns:
-            None
+            int: ID do registro criado.
 
         Raises:
-            Exception: If the tool is not available for the period.
-
-        Workflow:
-            Step 1: Call this method to reserve a tool.
-            Step 2: Call registrar_retirada when the user picks up the tool.
-            Step 3: Call registrar_devolucao when the tool is returned.
+            Exception: Se a ferramenta não estiver disponível.
         """
-        
-        if not data_emprestimo or not data_devolucao:
+        if not (dt_emprestimo and dt_devolucao):
             raise ValueError("Data de empréstimo e devolução não podem ser vazias.")
         
         with sqlite3.connect(self.db_path) as conn:
@@ -321,171 +276,243 @@ class ComunicacaoBanco:
 
             cursor.execute("""
                 SELECT 1 FROM REGISTROS
-                WHERE ID_FERRAMENTA=? AND DT_EMPRESTIMO_PREVISTA <= ? AND DT_DEVOLUCAO_PREVISTA >= ?
-            """, (id_ferramenta, data_devolucao, data_emprestimo))
+                WHERE ID_FERRAMENTA=? AND DT_EMPRESTIMO <= ? AND DT_DEVOLUCAO >= ?
+            """, (id_ferramenta, dt_devolucao, dt_emprestimo))
             
             if cursor.fetchone():
                 raise Exception("Ferramenta não está disponível no período solicitado.")
             
-            cursor.execute("""INSERT INTO REGISTROS (ID_USUARIO, ID_FERRAMENTA, DT_EMPRESTIMO_PREVISTA, DT_DEVOLUCAO_PREVISTA) 
+            cursor.execute("""INSERT INTO REGISTROS (ID_USUARIO, ID_FERRAMENTA, DT_EMPRESTIMO, DT_DEVOLUCAO) 
                            VALUES (?, ?, ?, ?)""", 
-                           (id_usuario, id_ferramenta, data_emprestimo, data_devolucao))
+                           (id_usuario, id_ferramenta, dt_emprestimo, dt_devolucao))
+            id_registro = cursor.lastrowid
             conn.commit()
-        
-    
-    def registrar_retirada(self, id_registro): 
+            return id_registro
+            
+    def registrar_retirada(self, id_registro: int, autorizado: bool):
         """
-        Register the pickup (retirada) of a reserved tool.
+        Registra a Autorização ou regeição de retirada de uma ferramenta.
 
         Args:
-            id_registro (int): Reservation record ID.
+            id_registro (int): ID do registro.
+            autorizado (bool): True para autorizar, False para rejeitar.
+
+        Returns:
+            None
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            # Atualiza o campo AUTORIZADO na tabela REGISTROS
+            cursor.execute("UPDATE REGISTROS SET AUTORIZADO=?, FINALIZADO = ? WHERE ID_REGISTRO=?", 
+                           (1 if autorizado else 0, 0 if autorizado else 1, id_registro))
+            if autorizado:
+                cursor.execute("""UPDATE FERRAMENTAS SET FERRAMENTA_DISPONIVEL = 0
+                               WHERE ID_FERRAMENTA = (SELECT ID_FERRAMENTA FROM REGISTROS WHERE ID_REGISTRO=?)""", 
+                               (id_registro,))
+            else:
+                cursor.execute("""UPDATE FERRAMENTAS SET FERRAMENTA_DISPONIVEL = 1
+                               WHERE ID_FERRAMENTA = (SELECT ID_FERRAMENTA FROM REGISTROS WHERE ID_REGISTRO=?)""", 
+                               (id_registro,))
+            conn.commit()
+
+    def registrar_devolucao(self, id_registro: int):
+        """
+        Registra a devolução de uma ferramenta.
+
+        Args:
+            id_registro (int): ID do registro.
 
         Returns:
             None
 
         Raises:
-            Exception: If the tool is not available for pickup or already picked up.
-
-        Workflow:
-            Call after registrar_reserva, when the user actually picks up the tool.
+            Exception: Se o registro já estiver finalizado.
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            # Set retirada time and mark as not available
-            cursor.execute('SELECT * FROM REGISTROS WHERE ID_REGISTRO=? AND FERRAMENTA_DISPONIVEL=0', (id_registro,))
-
-            if cursor.fetchone():
-                raise Exception("Ferramenta não disponível para retirada ou já retirada.")
-
-            cursor.execute('UPDATE REGISTROS SET DT_RETIRADA=?, FERRAMENTA_DISPONIVEL=0 WHERE ID_REGISTRO=? AND FERRAMENTA_DISPONIVEL=1', 
-                           (time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()), id_registro))
+            cursor.execute("UPDATE REGISTROS SET FINALIZADO=1 WHERE ID_REGISTRO=?", (id_registro,))
+            cursor.execute("""UPDATE FERRAMENTAS SET FERRAMENTA_DISPONIVEL=1 WHERE ID_FERRAMENTA = 
+                           (SELECT ID_FERRAMENTA FROM REGISTROS WHERE ID_REGISTRO=?)""", (id_registro,))
             conn.commit()
-    
-    def registrar_devolucao(self, id_registro: int):
-        """
-        Register the return (devolução) of a tool.
 
-        Args:
-            id_registro (int): Reservation record ID.
-
-        Returns:
-            None
-
-        Workflow:
-            Call after registrar_retirada, when the user returns the tool.
-        """
-        with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute("""UPDATE REGISTROS SET DT_RETORNO=?, FERRAMENTA_DISPONIVEL=1 
-                           WHERE ID_REGISTRO=? AND FERRAMENTA_DISPONIVEL=0""",
-                        (time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()), id_registro))
-            conn.commit()        
-            
-            
     def penalisar_usuario(self, id_usuario: int):
         """
-        Mark a user as delinquent (inadimplente).
+        Marca um usuário como inadimplente.
 
         Args:
-            id_usuario (int): User ID.
+            id_usuario (int): ID do usuário.
 
         Returns:
             None
-
-        Workflow:
-            Use this method to penalize users with overdue returns.
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute('UPDATE USUARIOS SET INADIMPLENTE=1 WHERE ID_USUARIO=?', (id_usuario,))
             conn.commit()
-    
+
     def regularizar_usuario(self, id_usuario: int):
         """
-        Remove delinquency status from a user.
+        Remove o status de inadimplente de um usuário.
 
         Args:
-            id_usuario (int): User ID.
+            id_usuario (int): ID do usuário.
 
         Returns:
             None
-
-        Workflow:
-            Use this method to regularize a user's status after resolving issues.
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute('UPDATE USUARIOS SET INADIMPLENTE=0 WHERE ID_USUARIO=?', (id_usuario,))
             conn.commit()
-    
-    def atualizar_cadastro_usuario(self, id_usuario: int, email: str, password: str, home_id: int, name: str, cpf: str, phone: str):
+
+    def atualizar_cadastro_usuario(self, id_usuario: int, email: str, password: str, id_casa: str, nome: str, cpf: str, telefone: str):
         """
-        Update user registration data.
+        Atualiza os dados de cadastro de um usuário.
 
         Args:
-            id_usuario (int): User ID.
-            email (str): New email.
-            password (str): New password (plain text).
-            home_id (int): New home ID.
-            name (str): New name.
-            cpf (str): New CPF.
-            phone (str): New phone number.
+            id_usuario (int): ID do usuário.
+            email (str): Novo email.
+            password (str): Nova senha.
+            id_casa (str): Nova casa.
+            nome (str): Novo nome.
+            cpf (str): Novo CPF.
+            telefone (str): Novo telefone.
 
         Returns:
             None
 
         Raises:
-            ValueError: If email or password are empty.
-
-        Workflow:
-            Use this method to update user profile information.
+            ValueError: Se email ou senha forem vazios.
         """
         if not email or not password:
             raise ValueError("Email e senha não podem ser vazios.")
         senha_codificada = codificar_senha(str(password))
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('UPDATE "USUARIOS" SET EMAIL=?, SENHA=?, HOME_ID=?, NOME=?, CPF=?, PHONE=? WHERE ID_USUARIO=?',
-                        (email.lower(), senha_codificada, home_id, name.lower(), cpf, phone, id_usuario))
+            cursor.execute('UPDATE USUARIOS SET EMAIL=?, SENHA=?, ID_CASA=?, NOME=?, CPF=?, TELEFONE=? WHERE ID_USUARIO=?',
+                        (email.lower(), senha_codificada, id_casa, nome.lower(), cpf, telefone, id_usuario))
             conn.commit()
-    
-    def consultar_historico_emprestimos(self, id_usuario: int):
+
+    def consultar_historico(self, id_usuario: int, dono: bool = False):
         """
-        Get the loan/reservation history for a user.
+        Retorna o histórico de empréstimos feitos por um usuário ou pelo dono.
 
         Args:
-            id_usuario (int): User ID.
+            id_usuario (int): ID do usuário.
+            dono (bool): Se True, retorna apenas os registros onde o usuário é o dono da ferramenta.
 
         Returns:
-            list[dict]: List of reservation records as dicts, or empty list if none found.
-
-        Workflow:
-            Use this method to show a user's borrowing history.
+            list[dict]: Lista de registros de empréstimo.
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM REGISTROS WHERE ID_USUARIO=?", (id_usuario,))
+            
+            if dono:
+                cursor.execute("""
+                    SELECT REGISTROS.* FROM REGISTROS
+                    JOIN FERRAMENTAS ON REGISTROS.ID_FERRAMENTA = FERRAMENTAS.ID_FERRAMENTA
+                    WHERE FERRAMENTAS.ID_USUARIO=?
+                """, (id_usuario,))
+            else: 
+                cursor.execute("SELECT * FROM REGISTROS WHERE ID_USUARIO=?", (id_usuario,))
+            
+            registros = cursor.fetchall()
+            return [self.registro_to_dict(x) for x in registros] if registros else []
+ 
+    def consultar_itens_emprestados(self, id_usuario: int, dono : bool = False):
+        """
+        Lista as ferramentas pendentes.
+
+        Args:
+            id_usuario (int): ID do usuário dono.
+
+        Returns:
+            list[dict]: Lista de registros de reservas feitas/recebidas.
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            if dono:
+                cursor.execute("""
+                    SELECT REGISTROS.* FROM REGISTROS
+                    JOIN FERRAMENTAS ON REGISTROS.ID_FERRAMENTA = FERRAMENTAS.ID_FERRAMENTA
+                    WHERE FERRAMENTAS.ID_USUARIO=? AND REGISTROS.FINALIZADO=0 AND REGISTROS.AUTORIZADO=1
+                """, (id_usuario,))
+            else:
+                cursor.execute("SELECT * FROM REGISTROS WHERE ID_USUARIO=? AND FINALIZADO=0 AND AUTORIZADO=1", (id_usuario,))
+            
             registros = cursor.fetchall()
             return [self.registro_to_dict(x) for x in registros] if registros else []
 
-    def checar_atrasos(self, id_usuario: int):
+    def consultar_solicitacoes(self, id_usuario: int, dono: bool = False):
         """
-        Check for overdue reservations for a user.
+        Lista as solicitações de empréstimo pendentes de um usuário.
 
         Args:
-            id_usuario (int): User ID.
+            id_usuario (int): ID do usuário dono.
 
         Returns:
-            list[dict]: List of overdue reservation records as dicts, or empty list if none found.
+            list[dict]: Lista de registros de solicitações pendentes.
+        """
+        if dono:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT REGISTROS.* FROM REGISTROS
+                    JOIN FERRAMENTAS ON REGISTROS.ID_FERRAMENTA = FERRAMENTAS.ID_FERRAMENTA
+                    WHERE FERRAMENTAS.ID_USUARIO=? AND REGISTROS.AUTORIZADO=0 AND REGISTROS.FINALIZADO=0
+                """, (id_usuario,))
+                registros = cursor.fetchall()
+                return [self.registro_to_dict(x) for x in registros] if registros else []
+        else:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT * FROM REGISTROS
+                    WHERE ID_USUARIO=? AND AUTORIZADO=0 AND FINALIZADO=0
+                """, (id_usuario,))
+        
+        registros = cursor.fetchall()
+        return [self.registro_to_dict(x) for x in registros] if registros else []
 
-        Workflow:
-            Use this method to identify users with overdue returns for penalties or notifications.
+    def checar_atrasos(self, id_usuario: int, dono : bool = False):
+        """
+        Verifica empréstimos em atraso de um usuário.
+
+        Args:
+            id_usuario (int): ID do usuário.
+
+        Returns:
+            list[dict]: Lista de registros em atraso.
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             curr_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-            cursor.execute("""
-                SELECT * FROM REGISTROS
-                WHERE ID_USUARIO=? AND DT_DEVOLUCAO_PREVISTA < ? AND DT_RETORNO IS NULL""", (id_usuario, curr_time))
+            if dono:
+                cursor.execute("""
+                    SELECT REGISTROS.* FROM REGISTROS
+                    JOIN FERRAMENTAS ON REGISTROS.ID_FERRAMENTA = FERRAMENTAS.ID_FERRAMENTA
+                    WHERE FERRAMENTAS.ID_USUARIO=? AND DT_DEVOLUCAO < ? AND FINALIZADO=0
+                """, (id_usuario, curr_time))
+            else:
+                cursor.execute("""
+                    SELECT * FROM REGISTROS
+                    WHERE ID_USUARIO=? AND DT_DEVOLUCAO < ? AND FINALIZADO=0
+                """, (id_usuario, curr_time))
             registros = cursor.fetchall()
             return [self.registro_to_dict(x) for x in registros] if registros else []
+
+    def validar_admin(self, id_usuario: int):
+        """
+        Verifica se um usuário é administrador.
+
+        Args:
+            id_usuario (int): ID do usuário.
+
+        Returns:
+            bool: True se for administrador, False caso contrário.
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT ADMIN FROM USUARIOS WHERE ID_USUARIO=?", (id_usuario,))
+            admin_status = cursor.fetchone()
+            return bool(admin_status[0]) if admin_status else False
