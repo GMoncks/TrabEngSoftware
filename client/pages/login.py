@@ -1,22 +1,15 @@
-from dash import (
-    register_page, dcc, html, callback, Input, Output, State, no_update
-)
-import dash_bootstrap_components as dbc
+from dash import dcc, html, register_page, callback, Input, Output, State, no_update
 import time
-
-from main import (
-     login_requests,
-     usuario_logado
-)
-
+from utils.classes.user import Usuario
+from main import login_requests
+import dash_bootstrap_components as dbc
 
 register_page(
     __name__,
-    path="/",
+    path="/login",
     title="Login",
     name="Login",
     description="Tela de login do sistema.",
-
 )
 
 layout = dbc.Container(
@@ -49,7 +42,9 @@ layout = dbc.Container(
 )
 
 @callback(
-    Output("login-output", "children", allow_duplicate=True),
+    Output("user-store", "data"),
+    Output("login-output", "children"),
+    Output("url", "pathname", allow_duplicate=True),
     Input("login-button", "n_clicks"),
     State("input-user", "value"),
     State("input-password", "value"),
@@ -61,34 +56,22 @@ def callback_login(n_clicks, user, password):
                 time.sleep(1)  # Simulando um atraso para o carregamento
                 user_info = login_requests.validar_login(user, password)
                 if user_info:
-                    usuario_logado.login(
-                        user_info["id"],
+                    user = Usuario()
+                    user.login(
+                        user_info["id_usuario"],
                         user_info["dt_cadastro"],
                         user_info["email"],
                         user_info["senha"],
-                        user_info["name"],
-                        user_info["home_id"],
+                        user_info["nome"],
+                        user_info["id_casa"],
                         user_info["cpf"],
-                        user_info["phone"],
-                        user_info["score"],
+                        user_info["telefone"],
+                        user_info["inadimplente"],
                         user_info["admin"],
-                        user_info["dt_last_acess"]
+                        user_info["dt_ultimo_acesso"]
                         )
-                    return "Login bem-sucedido!"
+                    return user.__dict__, "Login bem-sucedido!", "/home"
                 else:
-                    return "Usuário ou senha incorretos."
+                    return no_update, "Usuário ou senha incorretos.", no_update
         except Exception as e:
             return f"Erro ao fazer login: {e}"
-
-@callback(
-    Output('url', 'pathname', allow_duplicate=True),
-    Input('login-output', 'children'),
-    prevent_initial_call=True
-)
-def callback_trocar_tela(n_clicks):
-    if n_clicks == "Login bem-sucedido!":
-        time.sleep(1)
-        return "/home"
-    else:
-        return no_update
-    

@@ -102,11 +102,10 @@ class ComunicacaoBanco:
             None
         """
         senha_codificada = codificar_senha(str(password))
-        curr_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('INSERT INTO USUARIOS (DT_CADASTRO, EMAIL, SENHA, ID_CASA, NOME, CPF, TELEFONE) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                        (curr_time, email.lower(), senha_codificada, id_casa, nome, cpf, telefone))
+            cursor.execute('INSERT INTO USUARIOS (EMAIL, SENHA, ID_CASA, NOME, CPF, TELEFONE) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                        (email.lower(), senha_codificada, id_casa, nome, cpf, telefone))
             conn.commit()
 
     def validar_login(self, email, password):
