@@ -1,7 +1,9 @@
-from dash import register_page, dcc, html, callback, Input, Output, State, no_update, ctx, ALL
+from dash import register_page, dcc, html, callback, Input, Output, State, no_update
 import dash_bootstrap_components as dbc
 import datetime
-from main import tool_requests, login_requests
+
+from main import tool_requests
+
 register_page(
     __name__,
     path="/home",
@@ -9,53 +11,7 @@ register_page(
     name="home",
 )
 
-custom_css = {
-    "sidebar": {
-        "backgroundColor": "#4B2E2E",
-        "color": "white",
-        "height": "100vh",
-        "padding": "20px"
-    },
-    "sidebar_link": {
-        "color": "white",
-        "padding": "10px",
-        "textDecoration": "none",
-        "cursor": "pointer"
-    },
-    "sidebar_link_hover": {
-        "backgroundColor": "#6E4B4B"
-    }
-}
-
-layout = dbc.Container(fluid=True, children=[
-    dbc.Row([
-        # MENU LATERAL
-        dbc.Col(width=2, style=custom_css["sidebar"], children=[
-            html.Div([
-                html.Div(id="user_info"),
-                html.Hr(style={"borderColor": "white"}),
-                html.Div([
-                    html.Div("Minhas Ferramentas", id="menu_my_tools", style=custom_css["sidebar_link"], n_clicks=0),
-                    html.Div("Meus Empréstimos", id="menu_my_loans", style=custom_css["sidebar_link"], n_clicks=0),
-                    html.Div("Cadastro", id="menu_register", style=custom_css["sidebar_link"], n_clicks=0)
-                ], id="menu_links")
-            ])
-        ]),
-
-        # CONTEÚDO PRINCIPAL
-        dbc.Col(width=10, children=[
-            html.Div([
-                html.Div([
-                    html.Img(src="/assets/logo.png", height="60px", className="me-2"),
-                    html.H1("Martelo Amigo", className="mb-0")
-                ], className="d-flex align-items-center justify-content-center")
-            ], className="mt-3 mb-4 d-flex justify-content-center"),
-            html.Div(id="main_content")
-        ])
-    ])
-])
-
-search_layout = html.Div([
+layout = html.Div([
     # CABEÇALHO DE BUSCA (RESPONSIVO)
     dbc.Row([
         # Campo de busca: 5 colunas em tela grande, 12 em pequenas
@@ -142,119 +98,6 @@ search_layout = html.Div([
     ], id="modal-emprestimo", is_open=False)
 ])
 
-my_tools_layout = html.Div([
-    html.H3("Minhas Ferramentas"),
-    html.P("Conteúdo das suas ferramentas cadastradas...")
-])
-
-my_loans_layout = html.Div([
-    html.H3("Meus Empréstimos"),
-    html.P("Histórico e status dos seus empréstimos...")
-])
-
-register_layout = dbc.Container([
-        html.H2("Cadastro de Morador", className="my-4"),
-
-        dbc.Form([
-            dbc.Row([
-                dbc.Col([
-                    dbc.Label("Email"),
-                    dbc.Input(id="input-email", type="email", placeholder="email@exemplo.com")
-                ])
-            ], className="mb-3"),
-            
-            dbc.Row([
-                dbc.Col([
-                    dbc.Label("Senha"),
-                    dbc.Input(id="input-password", type="password", placeholder="Senha")
-                ])
-            ], className="mb-3"),
-
-            dbc.Row([
-                dbc.Col([
-                    dbc.Label("Nome completo"),
-                    dbc.Input(id="input-name", type="text", placeholder="Nome completo")
-                ])
-            ], className="mb-3"),
-            
-            dbc.Row([
-                dbc.Col([
-                    dbc.Label("Identificação da casa/apartamento"),
-                    dbc.Input(id="input-home_id", type="text", placeholder="Ex: Bloco B, Apto 101")
-                ])
-            ], className="mb-3"),
-
-            dbc.Row([
-                dbc.Col([
-                    dbc.Label("CPF"),
-                    dbc.Input(id="input-cpf", type="text", placeholder="000.000.000-00")
-                ])
-            ], className="mb-3"),
-
-            dbc.Row([
-                dbc.Col([
-                    dbc.Label("Telefone"),
-                    dbc.Input(id="input-phone", type="text", placeholder="(99) 99999-9999")
-                ])
-            ], className="mb-4"),
-
-            dbc.Button("Cadastrar", id="btn-submit", color="primary", className="me-2"),
-        ]),
-
-        html.Hr(),
-
-        html.Div([dbc.Alert(id="alert")], id="output", className="mt-3")
-    ], fluid=True)
-
-@callback(
-    Output("alert", "children"),
-    Output("alert", "color"),
-    Input("btn-submit", "n_clicks"),
-    State("input-email", "value"),
-    State("input-password", "value"),
-    State("input-home_id", "value"),
-    State("input-name", "value"),
-    State("input-cpf", "value"),
-    State("input-phone", "value"),
-    prevent_initial_call=True
-)
-def cadastrar(n_clicks, email, password, home_id, name, cpf, phone):    
-    try:
-        if n_clicks:
-            exists = login_requests.validar_usuario(email)
-            if not exists["exists"]:
-                login_requests.cadastrar_usuario(email, password, home_id, name, cpf, phone)
-                return [
-                    html.H5("Cadastro realizado com sucesso!", className="alert-heading"),
-                    html.P(f"Identificação: {home_id}"),
-                    html.P(f"Nome: {name}"),
-                    html.P(f"CPF: {cpf}"),
-                    html.P(f"Email: {email}"),
-                    html.P(f"Telefone: {phone}")
-                ], "success"
-            else:
-                return [html.H5("Usuário já existe.")], "danger"
-
-    except Exception as e:
-        return [html.H5(f"Erro ao cadastrar usuário: {e}")], "danger"
-
-@callback(
-    Output("main_content", "children"),
-    Input("menu_my_tools", "n_clicks"),
-    Input("menu_my_loans", "n_clicks"),
-    Input("menu_register", "n_clicks"),
-)
-def update_main_content(n_tools, n_loans, n_register):
-    ctx_id = ctx.triggered_id
-    if ctx_id == "menu_my_tools":
-        return my_tools_layout
-    elif ctx_id == "menu_my_loans":
-        return my_loans_layout
-    elif ctx_id == "menu_register":
-        return register_layout
-    else:
-        return search_layout
-    
 @callback(
     Output("resultado-busca", "children"),
     Input("busca-input", "value"),
@@ -310,49 +153,6 @@ def atualizar_resultado(busca, data_inicio, data_fim, categoria, proprietario):
         html.Div(id="mensagem-emprestimo", className="mt-3")
     ])
 
-@callback(
-    Output("modal-emprestimo", "is_open"),
-    Output("modal-nome-ferramenta", "children"),
-    Output("modal-icone-categoria", "src"),
-    Output("modal-categoria", "children"),
-    Output("modal-proprietario", "children"),
-    Output("data-periodo", "min_date_allowed"),
-    Output("data-periodo", "max_date_allowed"),
-    Input({"type": "solicitar-btn", "index": ALL}, "n_clicks"),
-    prevent_initial_call=True
-)
-def abrir_modal(n_clicks_list):
-    triggered = ctx.triggered_id
-    if not triggered or max(n_clicks_list) == 0:
-        return no_update
-
-    nome = triggered["index"]
-
-    # Simule os dados com base no nome da ferramenta
-    # (em produção, recupere de um dicionário ou banco)
-    categoria = "Furadeira"
-    proprietario = "João"
-    disponibilidade_inicio = datetime.date(2025, 6, 21)
-    disponibilidade_fim = datetime.date(2025, 6, 30)
-    icone = "/assets/logo.png"
-
-    return (
-        True,
-        nome,
-        icone,
-        f"Categoria: {categoria}",
-        f"Proprietário: {proprietario}",
-        disponibilidade_inicio,
-        disponibilidade_fim
-    )
-
-@callback(
-    Output("modal-emprestimo", "is_open", allow_duplicate=True),
-    Input("btn-cancelar-emprestimo", "n_clicks"),
-    prevent_initial_call=True
-)
-def fechar_modal(cancelar):
-    return False
 
 @callback(
     Output("modal-emprestimo", "is_open", allow_duplicate=True),
@@ -375,17 +175,3 @@ def confirmar_emprestimo(n_clicks, tool_name, start_date, end_date):
     else:
         return no_update, dbc.Alert(f"Falha ao solicitar empréstimo de '{tool_name}'.", color="danger")
 
-@callback(
-    Output("user-info", "children"),
-    Input("user-store", "data")
-)
-def mostrar_usuario(data):
-    if data:
-        return html.Div([
-                html.Img(src="/assets/user.png", height="30px", style={"border-radius": "50%"}),
-                html.Span(data["name"], className="ms-2 fw-bold")
-            ], className="d-flex align-items-center my-3"),
-    return html.Div([
-                html.Img(src="/assets/user.png", height="30px", style={"border-radius": "50%"}),
-                html.Span("Nome de Usuário", className="ms-2 fw-bold")
-            ], className="d-flex align-items-center my-3"),

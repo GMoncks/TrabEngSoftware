@@ -58,7 +58,7 @@ def callback_login(n_clicks, user, password):
                 if user_info:
                     user = Usuario()
                     user.login(
-                        user_info["id"],
+                        user_info["id_usuario"],
                         user_info["dt_cadastro"],
                         user_info["email"],
                         user_info["senha"],
@@ -66,7 +66,7 @@ def callback_login(n_clicks, user, password):
                         user_info["home_id"],
                         user_info["cpf"],
                         user_info["phone"],
-                        user_info["score"],
+                        user_info["inadimplente"],
                         user_info["admin"],
                         user_info["dt_last_acess"]
                         )
@@ -74,4 +74,4 @@ def callback_login(n_clicks, user, password):
                 else:
                     return no_update, "Usuário ou senha incorretos.", no_update
         except Exception as e:
-            return f"Erro ao fazer login: {e}"
+            return no_update,f"Erro ao fazer login: {e}", no_update
