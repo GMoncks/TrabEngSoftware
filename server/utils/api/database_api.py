@@ -11,8 +11,9 @@ def buscar_ferramentas():
     nome = request.args.get('nome', '')
     data_emprestimo = request.args.get('data_emprestimo')
     data_devolucao = request.args.get('data_devolucao')
+    categoria = request.args.get('id_categoria')
     try:
-        ferramentas = banco.buscar_itens_disponiveis(nome, data_emprestimo, data_devolucao)
+        ferramentas = banco.buscar_itens_disponiveis(nome, categoria, data_emprestimo, data_devolucao)
         return jsonify(ferramentas), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
@@ -88,5 +89,16 @@ def editar_ferramenta():
         nova_descricao = request.form['descricao']
         banco.modificar_item(id_ferramenta, nova_descricao)
         return jsonify({"message": "Descrição atualizada com sucesso!"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+# 11. Busca emprestimos ativos
+@database.route('/emprestimos/buscar', methods=['GET'])
+def buscar_registros():
+    try:
+        id_usuario = int(request.args.get('id_usuario'))
+        dono = request.args.get('dono').lower() == 'true'
+        registros = banco.consultar_historico(id_usuario, dono)
+        return jsonify(registros), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400

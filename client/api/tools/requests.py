@@ -3,33 +3,28 @@ from utils.api.request_helper import request_helper
 
 class ToolRequest:
     def __init__(self, baseURL):
+        self.buscar_ferramentas = '/ferramentas/buscar'
+        self.cadastrar_ferramenta = '/ferramentas/cadastrar'
+        self.remover_ferramenta = '/ferramentas/remover'
+        self.editar_ferramenta = '/ferramentas/editar'
         self.request = request_helper(baseURL)
 
-    def consultar_ferramentas(self, busca, data_inicio, data_fim, categoria, proprietario):
+    def consultar_ferramentas(self, nome, id_categoria, data_emprestimo, data_devolucao):
         """
-        Simula uma consulta a uma API de ferramentas.
+        Consulta a API de ferramentas por nome e disponibilidade
         """
-        ferramentas = [
-            {"nome": "Furadeira", "categoria": "Opção 1", "proprietario": "Opção 1", "disponibilidade_inicio": "2025-06-18", "disponibilidade_fim": "2025-06-29"},
-            {"nome": "Martelo", "categoria": "Opção 2", "proprietario": "Opção 2", "disponibilidade_inicio": "2025-06-20", "disponibilidade_fim": "2025-06-22"},
-            {"nome": "Serra Circular", "categoria": "Opção 3", "proprietario": "Opção 3", "disponibilidade_inicio": "2025-06-15", "disponibilidade_fim": "2025-06-25"},
-        ]
-
-        # Filtros básicos (simples para exemplo)
-        def corresponde(f):
-            if busca and busca.lower() not in f["nome"].lower():
-                return False
-            if categoria and f["categoria"] != categoria:
-                return False
-            if proprietario and f["proprietario"] != proprietario:
-                return False
-            if data_inicio and f["disponibilidade_inicio"] < data_inicio:
-                return False
-            if data_fim and f["disponibilidade_fim"] > data_fim:
-                return False
-            return True
-
-        return [f for f in ferramentas if corresponde(f)]
+        
+        consulta = {}
+        if nome:
+            consulta['nome'] = nome
+        if id_categoria:
+            consulta['id_categoria'] = id_categoria
+        if data_emprestimo:
+            consulta['data_emprestimo'] = data_emprestimo
+        if data_devolucao:
+            consulta['data_devolucao'] = data_devolucao
+        
+        return self.request.get(self.buscar_ferramentas, consulta)
     
     def solicitar_emprestimo(self, nome_ferramenta, data_inicio, data_fim):
         try:

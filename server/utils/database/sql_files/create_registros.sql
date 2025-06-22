@@ -6,8 +6,8 @@ CREATE TABLE "REGISTROS" (
     "DT_EMPRESTIMO" TIMESTAMP NOT NULL, -- Data do empréstimo
     "DT_DEVOLUCAO" TIMESTAMP, -- Data da devolução
     "AUTORIZADO" INT DEFAULT 0 NOT NULL, -- Aceitação do empréstimo
-    "FINALIZADO" INT DEFAULT 0 NOT NULL -- Aceitação da devolução
-    "DT_REGISTRO" TIMESTAMP DEFAULT (DATETIME('now', '-3 hours')) NOT NULL, -- Data do registro do empréstimo
+    "FINALIZADO" INT DEFAULT 0 NOT NULL, -- Aceitação da devolução
+    "DT_REGISTRO" TIMESTAMP DEFAULT (DATETIME('now', '-3 hours')) NOT NULL -- Data do registro do empréstimo
 );
 
 -- usuário 1 cadastra a ferramenta
@@ -32,4 +32,24 @@ CREATE TABLE "REGISTROS" (
 -- Na tabela FERRAMENTAS:
 --      UPDATE FERRAMENTA_DISPONIVEL = 1
 
+INSERT INTO REGISTROS (
+    DT_REGISTRO,
+    FINALIZADO,
+    AUTORIZADO,
+    DT_DEVOLUCAO,
+    DT_EMPRESTIMO,
+    ID_USUARIO,
+    ID_FERRAMENTA,
+    ID_REGISTRO
+)
+VALUES (
+    '2025-06-22 17:45:42',
+    0,
+    0,
+    '2025-06-26 18:45:42',
+    '2025-06-22 18:45:42',
+    1,
+    1,
+    1
+);
 

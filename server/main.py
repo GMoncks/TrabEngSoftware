@@ -1,6 +1,6 @@
 from flask import Flask
 from config import paths
-from utils.api import login_api
+from utils.api import login_api, database_api
 from config.paths import DATABASE_PATH
 from utils.database.sql_tools import ComunicacaoBanco
 
@@ -13,4 +13,5 @@ def create_app():
 
 app = create_app()
 app.register_blueprint(login_api.login)
+app.register_blueprint(database_api.database)
 app.run()

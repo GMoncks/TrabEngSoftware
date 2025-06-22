@@ -55,13 +55,15 @@ class ComunicacaoBanco:
         if not query_return:
             return None
         return {
-            "id_usuario": query_return[0],
-            "email": query_return[1],
-            "id_ferramenta": query_return[2],
-            "nome": query_return[3],
-            "descricao": query_return[4],
-            "dt_cadastro": query_return[5],
-            "ferramenta_disponivel": query_return[6]
+            "id_ferramenta": query_return[0],
+            "nome": query_return[1],
+            "descricao": query_return[2],
+            "id_categoria": query_return[3],
+            "dt_cadastro": query_return[4],
+            "id_usuario": query_return[5],
+            "ferramenta_disponivel": query_return[6],
+            "foto": query_return[7],
+            "nome_categoria":  query_return[9],
         }
 
     def registro_to_dict(self, query_return):
@@ -174,17 +176,16 @@ class ComunicacaoBanco:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("INSERT INTO FERRAMENTAS (ID_USUARIO, EMAIL, NOME, DESCRICAO, DT_CADASTRO) VALUES (?, ?, ?, ?, ?)",
-                           (id_usuario, email.lower(), nome.lower(), descricao, curr_time))
+                           (id_usuario, email.lower(), nome, descricao, curr_time))
             conn.commit()
 
-    def buscar_itens_disponiveis(self, nome: str, data_emprestimo: str = None, data_devolucao: str = None):
+    def buscar_itens_disponiveis(self, nome: str, id_categoria: int = None, data_emprestimo: str = None, data_devolucao: str = None):
         """
-        Busca ferramentas disponíveis para empréstimo pelo nome e período de interesse.
+        Busca ferramentas disponíveis para empréstimo pelo nome e categoria de interesse.
 
         Args:
             nome (str): Nome (ou parte) da ferramenta.
-            data_emprestimo (str, optional): início do empréstimo (formato 'YYYY-MM-DD HH:MM:SS').
-            data_devolucao (str, optional): devolução prevista (formato 'YYYY-MM-DD HH:MM:SS').
+            categoria (int, optional): tipo de ferramenta.
 
         Returns:
             list[dict]: Lista de ferramentas disponíveis.
@@ -193,13 +194,17 @@ class ComunicacaoBanco:
             nome = '%' + (nome.lower() if nome else '') + '%'
             cursor = conn.cursor()
             
-            if not (data_emprestimo and data_devolucao):
-                cursor.execute('SELECT * FROM FERRAMENTAS WHERE NOME LIKE ?', (nome,))
-            else:
-                cursor.execute("""SELECT * FROM FERRAMENTAS WHERE NOME LIKE ? 
-                               AND ID_FERRAMENTA NOT IN 
+            if not id_categoria and not (data_emprestimo and data_devolucao):
+                cursor.execute("""SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA 
+                               WHERE lower(NOME) LIKE ?""", (nome,))
+            elif not (data_emprestimo and data_devolucao):
+                cursor.execute("""SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA
+                               WHERE lower(NOME) LIKE ? AND FERRAMENTAS.ID_CATEGORIA = ?""", (nome,id_categoria))
+            else: 
+                cursor.execute("""SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA
+                               WHERE lower(NOME) LIKE ? AND FERRAMENTAS.ID_CATEGORIA = ? AND ID_FERRAMENTA NOT IN 
                                (SELECT ID_FERRAMENTA FROM REGISTROS WHERE DT_EMPRESTIMO <= ? AND DT_DEVOLUCAO >= ?)""", 
-                               (nome, data_devolucao, data_emprestimo))
+                               (nome, id_categoria, data_devolucao, data_emprestimo))
 
             ferramentas_disponiveis = cursor.fetchall()
             return [self.ferramenta_to_dict(x) for x in ferramentas_disponiveis] if ferramentas_disponiveis else []

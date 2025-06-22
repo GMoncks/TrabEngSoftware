@@ -1,6 +1,7 @@
 from dash import register_page, dcc, html, callback, Input, Output, State, no_update
 import dash_bootstrap_components as dbc
 import datetime
+from utils.enums.categorias import Tool
 
 from main import tool_requests
 
@@ -28,6 +29,7 @@ layout = html.Div([
             html.Label("Data de intervalo"),
             dcc.DatePickerRange(
                 id='data-disponibilidade',
+                min_date_allowed=datetime.datetime.now(),
                 start_date_placeholder_text="Início",
                 end_date_placeholder_text="Fim",
                 display_format='DD/MM/YYYY',
@@ -40,18 +42,7 @@ layout = html.Div([
             html.Label("Categoria"),
             dcc.Dropdown(
                 id="input-categoria",
-                options=[{"label": f"Opção {i}", "value": f"opcao{i}"} for i in range(1, 4)],
-                placeholder="Selecione",
-                clearable=True
-            )
-        ]),
-
-        # Proprietário: 12 cols no XS, 6 no MD, 2 no LG
-        dbc.Col(xs=12, md=6, lg=2, className="mt-2 mt-lg-0", children=[
-            html.Label("Proprietário"),
-            dcc.Dropdown(
-                id="input-proprietario",
-                options=[{"label": f"Opção {i}", "value": f"opcao{i}"} for i in range(1, 4)],
+                options=[{"label": t.label(), "value": t.value} for t in Tool],
                 placeholder="Selecione",
                 clearable=True
             )
@@ -104,43 +95,56 @@ layout = html.Div([
     Input("data-disponibilidade", "start_date"),
     Input("data-disponibilidade", "end_date"),
     Input("input-categoria", "value"),
-    Input("input-proprietario", "value"),
 )
-def atualizar_resultado(busca, data_inicio, data_fim, categoria, proprietario):
-    ferramentas = tool_requests.consultar_ferramentas(busca, data_inicio, data_fim, categoria, proprietario)
+def atualizar_resultado(busca, data_inicio, data_fim, id_categoria):
+    ferramentas = tool_requests.consultar_ferramentas(busca, id_categoria, data_inicio, data_fim)
 
     if not ferramentas:
         return html.P("Nenhuma ferramenta encontrada.", className="text-muted")
 
-    categoria_icone = {
-        "Opção 1": "🔧",
-        "Opção 2": "🔨",
-        "Opção 3": "🪚"
-    }
-
     cards = []
     for f in ferramentas:
-        icone = categoria_icone.get(f["categoria"], "🛠️")
+        categoria = Tool.from_value(int(f['id_categoria']))
+        icone = categoria.icone()
         card = dbc.Card([
             # Cabeçalho do card com fundo marrom claro e ícone
             html.Div([
                 html.Span(icone, className="me-2"),
                 html.Span(f["nome"], className="fw-bold")
-            ], className="p-2", style={"backgroundColor": "#D2B48C", "borderTopLeftRadius": "0.25rem", "borderTopRightRadius": "0.25rem"}),
+            ], className="p-2", style={
+                "backgroundColor": "#D2B48C",
+                "borderTopLeftRadius": "0.25rem",
+                "borderTopRightRadius": "0.25rem"
+            }),
 
             dbc.CardBody([
-                html.P(f["categoria"], className="card-text text-muted mb-1"),
-                html.P(f["proprietario"], className="card-text text-muted mb-1"),
-                html.P(f"Disponível de {f['disponibilidade_inicio']} até {f['disponibilidade_fim']}", className="card-text text-success mb-2"),
+                # Imagem centralizada
+                html.Div(
+                    html.Img(
+                        src=f["foto"],
+                        style={
+                            "maxWidth": "150px",
+                            "height": "auto"
+                        }
+                    ),
+                    className="d-flex justify-content-center mb-3"
+                ),
+
+                # Categoria e descrição
+                html.P(categoria.label(), className="card-text text-muted mb-1 text-center"),
+                html.P(f["descricao"], className="card-text text-muted mb-1 text-center"),
+
+                # Botão
                 dbc.Button(
                     "Solicitar Empréstimo",
-                    id={"type": "solicitar-btn", "index": f["nome"]},
+                    id={"type": "solicitar-btn", "index": f["id_ferramenta"]},
                     n_clicks=0,
                     style={
                         "backgroundColor": "#4B2E2E",
                         "borderColor": "#4B2E2E",
                         "color": "white"
-                    }
+                    },
+                    className="d-block mx-auto"  # Centraliza o botão
                 )
             ])
         ], className="mb-3 shadow-sm")

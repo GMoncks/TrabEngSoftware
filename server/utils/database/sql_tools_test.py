@@ -67,7 +67,7 @@ def banco():
     conn.close()
     banco = ComunicacaoBanco(db_path)
     yield banco
-    os.remove(db_path)
+    #os.remove(db_path)
 
 def test_usuario_to_dict_and_ferramenta_to_dict_and_registro_to_dict(banco):
     # Test usuario_to_dict
