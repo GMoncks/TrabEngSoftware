@@ -14,7 +14,17 @@ register_page(
 
 layout = dbc.Container(
     dbc.Row(
-        dbc.Col(
+        dbc.Col([
+            html.Div([
+                html.Img(
+                    src="../assets/logo.png",
+                    className="me-3",
+                    style={"maxWidth": "100px"}
+                ),
+                html.H4("Martelo Amigo", style={"color": "brown", "margin": 0, "fontSize": "50px", "whiteSpace": "nowrap"})
+            ],
+            className="d-flex align-items-center justify-content-center flex-nowrap mb-4"),
+                
             dbc.Card(
                 dbc.CardBody([
                     html.H3("Login", className="text-center mb-4"),
@@ -24,21 +34,24 @@ layout = dbc.Container(
                     dbc.Label("Senha", html_for="input-password"),
                     dbc.Input(type="password", id="input-password", placeholder="Digite sua senha"),
                     html.Br(),
-                    dbc.Row([
+                    dbc.Row(
                         dbc.Col(
                             dbc.Button("Entrar", id="login-button", color="primary", className="w-100"),
                             width=6
-                        )
-                    ]),
+                        ),
+                        justify="center"
+                    ),
                     dcc.Loading(
                         html.Div(id="login-output", className="mt-3", style={'min-height':"20px"})
                         )
                 ]),
                 className="shadow p-4"
-            ),
-            width=12, md=6, lg=4, className="mx-auto mt-5"
-        )
-    )
+            )
+        ],
+        width=12, md=6, lg=4, className="mx-auto mt-5"),
+        className="h-100 align-items-center justify-content-center"
+    ),
+    className="vh-100 align-items-center justify-content-center"
 )
 
 @callback(
