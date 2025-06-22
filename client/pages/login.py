@@ -58,20 +58,20 @@ def callback_login(n_clicks, user, password):
                 if user_info:
                     user = Usuario()
                     user.login(
-                        user_info["id"],
+                        user_info["id_usuario"],
                         user_info["dt_cadastro"],
                         user_info["email"],
                         user_info["senha"],
-                        user_info["name"],
-                        user_info["home_id"],
+                        user_info["nome"],
+                        user_info["id_casa"],
                         user_info["cpf"],
-                        user_info["phone"],
-                        user_info["score"],
+                        user_info["telefone"],
+                        user_info["inadimplente"],
                         user_info["admin"],
-                        user_info["dt_last_acess"]
+                        user_info["dt_ultimo_acesso"]
                         )
                     return user.__dict__, "Login bem-sucedido!", "/home"
                 else:
                     return no_update, "Usuário ou senha incorretos.", no_update
         except Exception as e:
-            return f"Erro ao fazer login: {e}"
+            return no_update, f"Erro ao fazer login: {e}", no_update
