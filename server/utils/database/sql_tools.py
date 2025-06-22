@@ -104,7 +104,7 @@ class ComunicacaoBanco:
         senha_codificada = codificar_senha(str(password))
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute('INSERT INTO USUARIOS (EMAIL, SENHA, ID_CASA, NOME, CPF, TELEFONE) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            cursor.execute('INSERT INTO USUARIOS (EMAIL, SENHA, ID_CASA, NOME, CPF, TELEFONE) VALUES (?, ?, ?, ?, ?, ?)',
                         (email.lower(), senha_codificada, id_casa, nome, cpf, telefone))
             conn.commit()
 
