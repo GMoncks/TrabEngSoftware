@@ -14,7 +14,17 @@ register_page(
 
 layout = dbc.Container(
     dbc.Row(
-        dbc.Col(
+        dbc.Col([
+            html.Div([
+                html.Img(
+                    src="../assets/logo.png",
+                    className="me-3",
+                    style={"maxWidth": "100px"}
+                ),
+                html.H4("Martelo Amigo", style={"color": "brown", "margin": 0, "fontSize": "50px", "whiteSpace": "nowrap"})
+            ],
+            className="d-flex align-items-center justify-content-center flex-nowrap mb-4"),
+                
             dbc.Card(
                 dbc.CardBody([
                     html.H3("Login", className="text-center mb-4"),
@@ -24,21 +34,24 @@ layout = dbc.Container(
                     dbc.Label("Senha", html_for="input-password"),
                     dbc.Input(type="password", id="input-password", placeholder="Digite sua senha"),
                     html.Br(),
-                    dbc.Row([
+                    dbc.Row(
                         dbc.Col(
                             dbc.Button("Entrar", id="login-button", color="primary", className="w-100"),
                             width=6
-                        )
-                    ]),
+                        ),
+                        justify="center"
+                    ),
                     dcc.Loading(
                         html.Div(id="login-output", className="mt-3", style={'min-height':"20px"})
                         )
                 ]),
                 className="shadow p-4"
-            ),
-            width=12, md=6, lg=4, className="mx-auto mt-5"
-        )
-    )
+            )
+        ],
+        width=12, md=6, lg=4, className="mx-auto mt-5"),
+        className="h-100 align-items-center justify-content-center"
+    ),
+    className="vh-100 align-items-center justify-content-center"
 )
 
 @callback(
@@ -62,16 +75,16 @@ def callback_login(n_clicks, user, password):
                         user_info["dt_cadastro"],
                         user_info["email"],
                         user_info["senha"],
-                        user_info["name"],
-                        user_info["home_id"],
+                        user_info["nome"],
+                        user_info["id_casa"],
                         user_info["cpf"],
-                        user_info["phone"],
+                        user_info["telefone"],
                         user_info["inadimplente"],
                         user_info["admin"],
-                        user_info["dt_last_acess"]
+                        user_info["dt_ultimo_acesso"]
                         )
                     return user.__dict__, "Login bem-sucedido!", "/home"
                 else:
                     return no_update, "Usuário ou senha incorretos.", no_update
         except Exception as e:
-            return no_update,f"Erro ao fazer login: {e}", no_update
+            return f"Erro ao fazer login: {e}"
