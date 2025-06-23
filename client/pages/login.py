@@ -28,8 +28,9 @@ layout = dbc.Container(
                         dbc.Col(
                             dbc.Button("Entrar", id="login-button", color="primary", className="w-100"),
                             width=6
-                        )
-                    ]),
+                        )],
+                        justify="center"
+                    ),
                     dcc.Loading(
                         html.Div(id="login-output", className="mt-3", style={'min-height':"20px"})
                         )
