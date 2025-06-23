@@ -5,6 +5,7 @@ class LoginRequest:
         self.createUserUrl = '/login/cadastrar_usuario'
         self.validateLoginUrl = '/login/validar_login'
         self.validateUserUrl = '/login/validar_usuario'
+        self.validateAdminUrl = '/usuarios/validar_admin'
         self.request = request_helper(baseURL)
 
     def cadastrar_usuario(self, email, password, id_casa, name, cpf, telefone):
@@ -25,8 +26,8 @@ class LoginRequest:
     def validar_usuario(self, nome):
         return self.request.get(self.validateUserUrl, {'email':nome})
 
-    def cadastrar_item():
-        pass
+    def validar_admin(self, id_usuario):
+        return self.request.get(self.validateAdminUrl, {'id_usuario':id_usuario})
 
 
 

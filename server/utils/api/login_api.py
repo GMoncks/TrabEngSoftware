@@ -37,3 +37,12 @@ def validar_usuario():
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@login.route('/usuarios/validar_admin', methods=['GET'])
+def validar_admin():
+    try:
+        db_comm = ComunicacaoBanco(DATABASE_PATH)
+        is_admin = db_comm.validar_admin(request.args.get('id_usuario'))
+        return jsonify({"is_admin": is_admin}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
