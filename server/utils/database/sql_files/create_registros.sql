@@ -1,7 +1,7 @@
 -- Active: 1747592286665@@127.0.0.1@3306
 CREATE TABLE "REGISTROS" (
     "ID_REGISTRO" INTEGER PRIMARY KEY AUTOINCREMENT,
-    "ID_FERRAMENTA" integer NOT NULL UNIQUE, -- Ferramenta emprestada
+    "ID_FERRAMENTA" integer NOT NULL, -- Ferramenta emprestada
     "ID_USUARIO" INTEGER NOT NULL, -- Usuario que fez o empréstimo
     "DT_EMPRESTIMO" TIMESTAMP NOT NULL, -- Data do empréstimo
     "DT_DEVOLUCAO" TIMESTAMP, -- Data da devolução
