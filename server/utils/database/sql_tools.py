@@ -159,7 +159,7 @@ class ComunicacaoBanco:
             usuario = cursor.fetchone()
             return {"exists": bool(usuario)}
 
-    def cadastrar_item(self, id_usuario: int, nome: str, descricao: str, email: str):
+    def cadastrar_ferramenta(self, id_usuario: int, nome: str, descricao: str, id_categoria: str):
         """
         Cadastra uma nova ferramenta no banco de dados.
 
@@ -172,42 +172,63 @@ class ComunicacaoBanco:
         Returns:
             None
         """
-        curr_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO FERRAMENTAS (ID_USUARIO, EMAIL, NOME, DESCRICAO, DT_CADASTRO) VALUES (?, ?, ?, ?, ?)",
-                           (id_usuario, email.lower(), nome, descricao, curr_time))
+            cursor.execute("INSERT INTO FERRAMENTAS (ID_USUARIO, NOME, DESCRICAO, ID_CATEGORIA) VALUES (?, ?, ?, ?)",
+                           (id_usuario, nome, descricao, id_categoria))
             conn.commit()
 
-    def buscar_itens_disponiveis(self, nome: str, id_categoria: int = None, data_emprestimo: str = None, data_devolucao: str = None):
+    def buscar_ferramentas(self, nome: str = None, id_categoria: int = None, data_emprestimo: str = None, data_devolucao: str = None, id_dono: int = None):
         """
         Busca ferramentas disponíveis para empréstimo pelo nome e categoria de interesse.
 
         Args:
-            nome (str): Nome (ou parte) da ferramenta.
-            categoria (int, optional): tipo de ferramenta.
+            nome (str, optional): Nome (ou parte) da ferramenta.
+            id_categoria (int, optional): tipo de ferramenta.
+            data_emprestimo (str, optional): Data/hora de início do empréstimo.
+            data_devolucao (str, optional): Data/hora de devolução prevista.
+            id_dono (int, optional): ID do usuário dono da ferramenta.
 
         Returns:
             list[dict]: Lista de ferramentas disponíveis.
         """
         with sqlite3.connect(self.db_path) as conn:
-            nome = '%' + (nome.lower() if nome else '') + '%'
-            cursor = conn.cursor()
+             
+            query = "SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA"
             
-            if not id_categoria and not (data_emprestimo and data_devolucao):
-                cursor.execute("""SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA 
-                               WHERE lower(NOME) LIKE ?""", (nome,))
-            elif not (data_emprestimo and data_devolucao):
-                cursor.execute("""SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA
-                               WHERE lower(NOME) LIKE ? AND FERRAMENTAS.ID_CATEGORIA = ?""", (nome,id_categoria))
-            else: 
-                cursor.execute("""SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA
-                               WHERE lower(NOME) LIKE ? AND FERRAMENTAS.ID_CATEGORIA = ? AND ID_FERRAMENTA NOT IN 
-                               (SELECT ID_FERRAMENTA FROM REGISTROS WHERE DT_EMPRESTIMO <= ? AND DT_DEVOLUCAO >= ?)""", 
-                               (nome, id_categoria, data_devolucao, data_emprestimo))
+            if nome or id_categoria or data_emprestimo or data_devolucao or id_dono:
+                query += " WHERE"
+                filters = ()
 
-            ferramentas_disponiveis = cursor.fetchall()
-            return [self.ferramenta_to_dict(x) for x in ferramentas_disponiveis] if ferramentas_disponiveis else []
+            if nome:
+                query += " lower(NOME) LIKE ?"
+                nome = '%' + (nome.lower() if nome else '') + '%'
+                filters += (nome,)
+
+            if id_categoria:
+                if nome:
+                    query += " AND"
+                query += " FERRAMENTAS.ID_CATEGORIA = ?"
+                filters += (id_categoria,)
+
+            if data_emprestimo and data_devolucao:
+                if nome or id_categoria:
+                    query += " AND"
+                query += " ID_FERRAMENTA NOT IN (SELECT ID_FERRAMENTA FROM REGISTROS WHERE DT_EMPRESTIMO <= ? AND DT_DEVOLUCAO >= ?)"
+                filters += (data_devolucao, data_emprestimo)
+                
+            if id_dono:
+                if nome or id_categoria or (data_emprestimo and data_devolucao):
+                    query += " AND"
+                query += " FERRAMENTAS.ID_USUARIO = ?"
+                filters += (id_dono,)
+            print("query: ",query, "\n"
+                  "filters: ", filters)
+            cursor = conn.cursor()
+            cursor.execute(query, filters)
+
+            ferramentas = cursor.fetchall()
+            return [self.ferramenta_to_dict(x) for x in ferramentas] if ferramentas else []
 
     def remover_item(self, id_ferramenta: int):
         """
