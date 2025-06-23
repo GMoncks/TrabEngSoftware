@@ -111,9 +111,9 @@ def carregar_ferramentas(n_clicks_cadastrar, n_clicks_excluir, pathname, user_da
         return html.P("Nenhuma ferramenta cadastrada.")
     
     df = pd.DataFrame(ferramentas)
-    df.drop(columns=["id_usuario", "id_categoria", "foto", "nome_usuario"], inplace=True)
-    df.columns = ["Descrição", "Data Cadastro", "Disponível", "ID", "Nome", "Categoria"]
-    df = df[["ID", "Nome", "Descrição", "Categoria", "Data Cadastro", "Disponível"]]
+    df.drop(columns=["id_usuario", "id_categoria", "foto"], inplace=True)
+    df.columns = ["Descrição", "Data de Cadastro", "Disponível", "ID", "Nome", "Categoria", "Dono"]
+    df = df[["ID", "Nome", "Descrição", "Categoria", "Data de Cadastro", "Disponível", "Dono"]]
     df["Disponível"] = df["Disponível"].apply(lambda x: "Sim" if x else "Não")
     
     return dbc.Table.from_dataframe(
