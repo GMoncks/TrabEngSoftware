@@ -8,9 +8,10 @@ class LoginRequest:
         self.validateAdminUrl = '/usuarios/validar_admin'
         self.request = request_helper(baseURL)
 
-    def cadastrar_usuario(self, email, password, id_casa, name, cpf, telefone):
+    def cadastrar_usuario(self, id_usuario, email, password, id_casa, name, cpf, telefone):
         return self.request.post(self.createUserUrl, 
             {
+                'id_usuario':id_usuario,
                 'email':email,
                 'password':password,
                 'id_casa':id_casa,

@@ -6,8 +6,10 @@ login = Blueprint('login', __name__)
 
 @login.route('/login/cadastrar_usuario', methods=['POST'])
 def cadastrar_usuario():
-    try:  
+    try:
         db_comm = ComunicacaoBanco(DATABASE_PATH)
+        if(not db_comm.validar_admin(int(request.form['id_usuario']))):
+            return jsonify({"error": "Usuário precisa ser administrador"}), 500
         db_comm.cadastrar_usuario(
             request.form['email'],
             request.form['password'],
