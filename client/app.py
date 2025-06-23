@@ -8,7 +8,7 @@ custom_css = {
     "sidebar": {
         "backgroundColor": "#4B2E2E",
         "color": "white",
-        "height": "100vh",
+        "min-height": "100vh",
         "padding": "20px"
     },
     "sidebar_link": {
