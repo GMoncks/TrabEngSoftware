@@ -46,7 +46,7 @@ def solicitar_reserva():
         if atrasos:
             return jsonify({"error": "Usuário possui pendências/atrasos e não pode reservar novas ferramentas."}), 403
         registro_id = banco.reservar_item(id_usuario, id_ferramenta, dt_emprestimo, dt_devolucao)
-        return jsonify({"message": "Reserva solicitada com sucesso!", "id_registro": registro_id}), 201
+        return jsonify({"message": "Reserva solicitada com sucesso!", "id_registro": registro_id}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
@@ -101,5 +101,15 @@ def buscar_registros():
         dono = request.args.get('dono').lower() == 'true'
         registros = banco.consultar_historico(id_usuario, dono)
         return jsonify(registros), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+    
+# 12. Buscar ferramenta por id
+@database.route('/ferramentas/id', methods=['GET'])
+def buscar_ferramenta():
+    id = request.args.get('id')
+    try:
+        ferramenta = banco.buscar_item(id)
+        return jsonify(ferramenta), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400

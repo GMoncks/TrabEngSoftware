@@ -1,9 +1,10 @@
-from dash import register_page, dcc, html, callback, Input, Output, State, no_update
+import time
+from dash import register_page, dcc, html, callback, Input, Output, State, no_update, ctx, ALL
 import dash_bootstrap_components as dbc
 import datetime
 from utils.enums.categorias import Tool
 
-from main import tool_requests
+from main import tool_requests, loan_requests
 
 register_page(
     __name__,
@@ -56,6 +57,7 @@ layout = html.Div([
     html.Div(id="resultado-busca", className="mt-3"),
     
     dbc.Modal([
+        dcc.Store(id='id_ferramenta-store'),
         dbc.ModalHeader(
             dbc.ModalTitle(
                 html.Div([
@@ -159,23 +161,72 @@ def atualizar_resultado(busca, data_inicio, data_fim, id_categoria):
 
 
 @callback(
+    Output("modal-emprestimo", "is_open"),
+    Output("modal-nome-ferramenta", "children"),
+    Output("modal-icone-categoria", "src"),
+    Output("modal-categoria", "children"),
+    Output("modal-proprietario", "children"),
+    Output("id_ferramenta-store", "data"),
+    Output("data-periodo", "start_date"),
+    Output("data-periodo", "end_date"),
+    Output("data-periodo", "min_date_allowed"),
+    Output("data-periodo", "max_date_allowed"),
+    Output("loan_confirmation_message", "children", allow_duplicate=True),
+    Input({"type": "solicitar-btn", "index": ALL}, "n_clicks"),
+    State("data-disponibilidade", "start_date"),
+    State("data-disponibilidade", "end_date"),
+    prevent_initial_call=True
+)
+def abrir_modal(n_clicks_list, data_inicio, data_fim):
+    triggered = ctx.triggered_id
+    if not triggered or max(n_clicks_list) == 0:
+        return no_update
+
+    id = triggered["index"]
+    ferramenta = tool_requests.consultar_ferramenta(id)
+    categoria = Tool.from_value(int(ferramenta['id_categoria']))
+
+    return (
+        True,
+        ferramenta['nome'],
+        categoria.icone(),
+        f"Categoria: {categoria.label()}",
+        f"Proprietário: {ferramenta['nome_usuario']}",
+        ferramenta['id_ferramenta'],
+        data_inicio,
+        data_fim,
+        data_inicio,
+        data_fim,
+        html.Div(),
+    )
+
+@callback(
+    Output("modal-emprestimo", "is_open", allow_duplicate=True),
+    Input("btn-cancelar-emprestimo", "n_clicks"),
+    prevent_initial_call=True
+)
+def fechar_modal(cancelar):
+    return False
+
+@callback(
     Output("modal-emprestimo", "is_open", allow_duplicate=True),
     Output("loan_confirmation_message", "children"),
     Input("btn-confirmar-emprestimo", "n_clicks"),
     State("modal-nome-ferramenta", "children"),
     State("data-periodo", "start_date"),
     State("data-periodo", "end_date"),
+    State('user-store', 'data'),
+    State('id_ferramenta-store', 'data'),
     prevent_initial_call=True
 )
-def confirmar_emprestimo(n_clicks, tool_name, start_date, end_date):
+def confirmar_emprestimo(n_clicks, tool_name, start_date, end_date, usuario, id_ferramenta):
     if not tool_name or not start_date or not end_date:
         return no_update, dbc.Alert("Preencha todos os campos antes de confirmar o empréstimo.", color="warning")
 
-    # Simula envio da solicitação para a API
-    sucesso = tool_requests.solicitar_emprestimo(tool_name, start_date, end_date)  # true ou false
-
-    if sucesso:
+    try:
+        loan_requests.solicitar_emprestimo(usuario['id_usuario'], id_ferramenta, start_date, end_date)  # true ou false
         return False, dbc.Alert(f"Empréstimo de '{tool_name}' solicitado com sucesso!", color="success")
-    else:
-        return no_update, dbc.Alert(f"Falha ao solicitar empréstimo de '{tool_name}'.", color="danger")
+    except Exception as e:
+        return no_update, dbc.Alert(f"Falha ao solicitar empréstimo de '{tool_name}': {e}", color="danger")
+        
 

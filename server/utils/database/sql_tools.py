@@ -61,6 +61,7 @@ class ComunicacaoBanco:
             "id_categoria": query_return[3],
             "dt_cadastro": query_return[4],
             "id_usuario": query_return[5],
+            "nome_usuario":  query_return[14],
             "ferramenta_disponivel": query_return[6],
             "foto": query_return[7],
             "nome_categoria":  query_return[9],
@@ -229,6 +230,26 @@ class ComunicacaoBanco:
 
             ferramentas = cursor.fetchall()
             return [self.ferramenta_to_dict(x) for x in ferramentas] if ferramentas else []
+        
+    def buscar_item(self, id: int):
+        """
+        Busca ferramenta por id.
+
+        Args:
+            id (int): Id da ferramenta.
+
+        Returns:
+            list[dict]: Lista de ferramentas disponíveis.
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            
+            cursor.execute("""SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA 
+                           JOIN USUARIOS ON USUARIOS.ID_USUARIO = FERRAMENTAS.ID_USUARIO
+                               WHERE FERRAMENTAS.ID_FERRAMENTA = ? LIMIT 1""", (id,))
+
+            ferramenta = cursor.fetchone()
+            return self.ferramenta_to_dict(ferramenta)
 
     def remover_item(self, id_ferramenta: int):
         """
