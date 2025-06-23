@@ -63,8 +63,8 @@ app.layout = dbc.Container(id="main-container", fluid=True, children=[
         dbc.Col(id="page_container", width=12, children=[
             html.Div([
                 html.Div([
-                    html.Img(src="/assets/logo.png", height="60px", className="me-2"),
-                    html.H1("Martelo Amigo", className="mb-0")
+                    html.Img(src="/assets/logo.png", height="100px", className="me-2"),
+                    html.H1("Martelo Amigo", className="mb-0", style={"color":"brown", "maxWidth": "400px", "fontSize":"50px"})
                 ], className="d-flex align-items-center justify-content-center")
             ], className="mt-3 mb-4 d-flex justify-content-center"),
             page_container
