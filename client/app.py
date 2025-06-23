@@ -56,6 +56,7 @@ app.layout = dbc.Container(id="main-container", fluid=True, children=[
             dbc.Button("Emprestar",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/my_loans", id="btn-my-loans"),
             dbc.Button("Pedir Emprestado",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/loans", id="btn-loans"),
             dbc.Button("Cadastro",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/register", id="btn-register"),
+            dbc.Button("Sair",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/login", id="btn-logout"),
                 ], id="menu_links")
             ])
         ]),
@@ -72,6 +73,18 @@ app.layout = dbc.Container(id="main-container", fluid=True, children=[
         ]),
     ]),
 ])
+
+@callback(
+    Output("url", "pathname", allow_duplicate=True),
+    Output("user-store", "clear_data"),
+    Input("btn-logout", "n_clicks"),
+    prevent_initial_call=True
+)
+def deslogar(n_clicks):
+    if n_clicks:
+        return "/login", True
+    else:
+        return no_update, False 
 
 @callback(
     Output("url", "pathname", allow_duplicate=True),

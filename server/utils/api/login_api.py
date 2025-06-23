@@ -16,7 +16,7 @@ def cadastrar_usuario():
             request.form['cpf'],
             request.form['telefone']       # Mudou de phone para telefone
         )
-        return jsonify({"message": "Usuário cadastrado com sucesso!"}), 201
+        return jsonify({"message": "Usuário cadastrado com sucesso!"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

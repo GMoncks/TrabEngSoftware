@@ -26,7 +26,12 @@ layout = dbc.Container(
                     html.Br(),
                     dbc.Row([
                         dbc.Col(
-                            dbc.Button("Entrar", id="login-button", color="primary", className="w-100"),
+                            dbc.Button("Entrar", id="login-button", color="primary", className="w-100", 
+                                       style={
+                                            "backgroundColor": "#4B2E2E",
+                                            "borderColor": "#4B2E2E",
+                                            "color": "white"
+                                        }), 
                             width=6
                         )],
                         justify="center"
@@ -74,5 +79,7 @@ def callback_login(n_clicks, user, password):
                     return user.__dict__, "Login bem-sucedido!", "/home"
                 else:
                     return no_update, "Usuário ou senha incorretos.", no_update
+            else:
+                return no_update, no_update, no_update
         except Exception as e:
-            return f"Erro ao fazer login: {e}"
+            return no_update, f"Erro ao fazer login: {e}", no_update
