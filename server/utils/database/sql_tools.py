@@ -193,13 +193,26 @@ class ComunicacaoBanco:
         Returns:
             list[dict]: Lista de ferramentas disponíveis.
         """
+
+        # Limpeza dos filtros
+        if nome == "None":
+            nome = None
+        if id_categoria == "None":
+            id_categoria = None
+        if data_emprestimo == "None":
+            data_emprestimo = None
+        if data_devolucao == "None":
+            data_devolucao = None
+        if id_dono == "None":
+            id_dono = None
+
         with sqlite3.connect(self.db_path) as conn:
              
-            query = "SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA"
+            query = "SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA JOIN USUARIOS ON USUARIOS.ID_USUARIO = FERRAMENTAS.ID_USUARIO"
+            filters = ()
             
             if nome or id_categoria or data_emprestimo or data_devolucao or id_dono:
                 query += " WHERE"
-                filters = ()
 
             if nome:
                 query += " lower(NOME) LIKE ?"
