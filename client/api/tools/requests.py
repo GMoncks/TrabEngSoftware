@@ -13,6 +13,20 @@ class ToolRequest:
     def consultar_ferramentas(self, nome=None, id_categoria=None, data_emprestimo=None, data_devolucao=None, id_dono=None):
         """
         Consulta a API de ferramentas por nome e disponibilidade
+
+        Retorna uma lista de dicionários com as ferramentas que atendem aos critérios de busca.
+        Cada dicionário da lista tem as chaves:
+        - id_ferramenta
+        - nome
+        - descricao
+        - id_categoria
+        - dt_cadastro
+        - id_usuario
+        - nome_usuario
+        - ferramenta_disponivel
+        - foto
+        - nome_categoria
+        
         """
         
         consulta = {}
