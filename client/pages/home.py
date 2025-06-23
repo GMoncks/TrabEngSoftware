@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 import datetime
 from utils.enums.categorias import Tool
 
-from main import tool_requests, loan_requests
+from main import tool_requests, loan_requests, login_requests
 
 register_page(
     __name__,
@@ -221,6 +221,8 @@ def fechar_modal(cancelar):
     prevent_initial_call=True
 )
 def confirmar_emprestimo(n_clicks, tool_name, start_date, end_date, usuario, id_ferramenta):
+    if login_requests.validar_admin(usuario['id_usuario']):
+        return no_update, dbc.Alert("Administrador não pode solicitar empréstimos.", color="warning")
     if not tool_name or not start_date or not end_date:
         return no_update, dbc.Alert("Preencha todos os campos antes de confirmar o empréstimo.", color="warning")
 
