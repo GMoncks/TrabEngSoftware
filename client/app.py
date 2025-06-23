@@ -85,50 +85,6 @@ def redirecionar_se_nao_logado(pathname, data):
 
 
 @callback(
-    Output("modal-emprestimo", "is_open"),
-    Output("modal-nome-ferramenta", "children"),
-    Output("modal-icone-categoria", "src"),
-    Output("modal-categoria", "children"),
-    Output("modal-proprietario", "children"),
-    Output("data-periodo", "min_date_allowed"),
-    Output("data-periodo", "max_date_allowed"),
-    Input({"type": "solicitar-btn", "index": ALL}, "n_clicks"),
-    prevent_initial_call=True
-)
-def abrir_modal(n_clicks_list):
-    triggered = ctx.triggered_id
-    if not triggered or max(n_clicks_list) == 0:
-        return no_update
-
-    nome = triggered["index"]
-
-    # Simule os dados com base no nome da ferramenta
-    # (em produção, recupere de um dicionário ou banco)
-    categoria = "Furadeira"
-    proprietario = "João"
-    disponibilidade_inicio = datetime.date(2025, 6, 21)
-    disponibilidade_fim = datetime.date(2025, 6, 30)
-    icone = "/assets/logo.png"
-
-    return (
-        True,
-        nome,
-        icone,
-        f"Categoria: {categoria}",
-        f"Proprietário: {proprietario}",
-        disponibilidade_inicio,
-        disponibilidade_fim
-    )
-
-@callback(
-    Output("modal-emprestimo", "is_open", allow_duplicate=True),
-    Input("btn-cancelar-emprestimo", "n_clicks"),
-    prevent_initial_call=True
-)
-def fechar_modal(cancelar):
-    return False
-
-@callback(
     Output("user-info", "children"),
     Output("sidebar", "style"),
     Output("page_container", "width"),
