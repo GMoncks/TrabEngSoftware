@@ -18,14 +18,26 @@ layout = html.Div([
     # Tabela de ferramentas
     dcc.Loading(
         dbc.Card([
-            dbc.CardHeader("Lista de Ferramentas", className="bg-primary text-white fw-bold"),
+            dbc.CardHeader("Lista de Ferramentas", style={
+                            "backgroundColor": "#D2B48C",
+                            "borderTopLeftRadius": "0.25rem",
+                            "borderTopRightRadius": "0.25rem",
+                            "fontWeight": "bold",
+                            "color": "black"
+                            }),
             dbc.CardBody(id="tabela-ferramentas", className="mt-3")
         ], className="mb-4 shadow")
     ),
 
     # Formulário de cadastro
     dbc.Card([
-        dbc.CardHeader("Adicionar Nova Ferramenta", className="bg-success text-white fw-bold"),
+        dbc.CardHeader("Adicionar Nova Ferramenta", style={
+                            "backgroundColor": "#D2B48C",
+                            "borderTopLeftRadius": "0.25rem",
+                            "borderTopRightRadius": "0.25rem",
+                            "fontWeight": "bold",
+                            "color": "black"
+                            }),
         dbc.CardBody([
             dbc.Row([
                 dbc.Col([
@@ -55,7 +67,14 @@ layout = html.Div([
 
     # Exclusão por ID
     dbc.Card([
-        dbc.CardHeader("Excluir Ferramenta por ID", className="bg-danger text-white fw-bold"),
+        dbc.CardHeader("Excluir Ferramenta por ID",
+                       style={
+                            "backgroundColor": "#D2B48C",
+                            "borderTopLeftRadius": "0.25rem",
+                            "borderTopRightRadius": "0.25rem",
+                            "fontWeight": "bold",
+                            "color": "black"
+                            }),
         dbc.CardBody([
             dbc.Row([
                 dbc.Col([
@@ -64,7 +83,7 @@ layout = html.Div([
                 ], md=6),
                 dbc.Col([
                     dbc.Button("Excluir", id="btn-excluir-ferramenta", color="danger", className="mt-4"),
-                ], md=6)
+                ], md=6, className="d-flex align-items-end")
             ])
         ])
     ], className="shadow"),
