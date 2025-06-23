@@ -207,9 +207,16 @@ class ComunicacaoBanco:
             id_dono = None
 
         with sqlite3.connect(self.db_path) as conn:
-             
+            cursor = conn.cursor()
             query = "SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA JOIN USUARIOS ON USUARIOS.ID_USUARIO = FERRAMENTAS.ID_USUARIO"
             filters = ()
+
+            # Se o dono for um admin, não filtra por dono
+            if id_dono:
+                cursor.execute("SELECT ADMIN FROM USUARIOS WHERE ID_USUARIO=?", (id_dono,))
+                resultado = cursor.fetchone()
+                if resultado[0] == 1:  # Se for admin, não filtra por dono
+                    id_dono = None
             
             if nome or id_categoria or data_emprestimo or data_devolucao or id_dono:
                 query += " WHERE"
@@ -236,9 +243,7 @@ class ComunicacaoBanco:
                     query += " AND"
                 query += " FERRAMENTAS.ID_USUARIO = ?"
                 filters += (id_dono,)
-            print("query: ",query, "\n"
-                  "filters: ", filters)
-            cursor = conn.cursor()
+                
             cursor.execute(query, filters)
 
             ferramentas = cursor.fetchall()
