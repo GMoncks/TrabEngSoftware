@@ -64,7 +64,8 @@ class ComunicacaoBanco:
             "nome_usuario":  query_return[14],
             "ferramenta_disponivel": query_return[6],
             "foto": query_return[7],
-            "nome_categoria":  query_return[9],
+            "nome_usuario_dono":  query_return[15],
+            "id_usuario_dono": query_return[16],
         }
 
     def registro_to_dict(self, query_return):
@@ -81,12 +82,16 @@ class ComunicacaoBanco:
             return None
         return {
             "id_registro": query_return[0],
-            "id_usuario": query_return[1],
-            "id_ferramenta": query_return[2],
+            "id_ferramenta": query_return[1],
+            "id_usuario": query_return[2],
             "dt_emprestimo": query_return[3],
             "dt_devolucao": query_return[4],
-            "autorizado": query_return[5],
-            "finalizado": query_return[6]
+            "id_status": query_return[5],
+            "nome_ferramenta": query_return[8],
+            "id_categoria": query_return[10],
+            "nome_usuario": query_return[15],
+            "nome_usuario_dono": query_return[16],
+            "id_usuario_dono": query_return[17],
         }
 
     def cadastrar_usuario(self, email, password, id_casa, nome, cpf, telefone):
@@ -222,7 +227,7 @@ class ComunicacaoBanco:
                 query += " WHERE"
 
             if nome:
-                query += " lower(NOME) LIKE ?"
+                query += " lower(FERRAMENTAS.NOME) LIKE ?"
                 nome = '%' + (nome.lower() if nome else '') + '%'
                 filters += (nome,)
 
@@ -384,8 +389,8 @@ class ComunicacaoBanco:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             # Atualiza o campo AUTORIZADO na tabela REGISTROS
-            cursor.execute("UPDATE REGISTROS SET AUTORIZADO=?, FINALIZADO = ? WHERE ID_REGISTRO=?", 
-                           (1 if autorizado else 0, 0 if autorizado else 1, id_registro))
+            cursor.execute("UPDATE REGISTROS SET ID_STATUS=? WHERE ID_REGISTRO=?", 
+                           (3 if autorizado else 2, id_registro))
             if autorizado:
                 cursor.execute("""UPDATE FERRAMENTAS SET FERRAMENTA_DISPONIVEL = 0
                                WHERE ID_FERRAMENTA = (SELECT ID_FERRAMENTA FROM REGISTROS WHERE ID_REGISTRO=?)""", 
@@ -411,7 +416,7 @@ class ComunicacaoBanco:
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("UPDATE REGISTROS SET FINALIZADO=1 WHERE ID_REGISTRO=?", (id_registro,))
+            cursor.execute("UPDATE REGISTROS SET ID_STATUS=4 WHERE ID_REGISTRO=?", (id_registro,))
             cursor.execute("""UPDATE FERRAMENTAS SET FERRAMENTA_DISPONIVEL=1 WHERE ID_FERRAMENTA = 
                            (SELECT ID_FERRAMENTA FROM REGISTROS WHERE ID_REGISTRO=?)""", (id_registro,))
             conn.commit()
@@ -490,12 +495,19 @@ class ComunicacaoBanco:
             
             if dono:
                 cursor.execute("""
-                    SELECT REGISTROS.* FROM REGISTROS
-                    JOIN FERRAMENTAS ON REGISTROS.ID_FERRAMENTA = FERRAMENTAS.ID_FERRAMENTA
-                    WHERE FERRAMENTAS.ID_USUARIO=?
+                    SELECT R.*, F.*, UR.NOME, UF.NOME as NOME_DONO, F.ID_USUARIO as ID_USUARIO_DONO FROM REGISTROS R
+                    JOIN FERRAMENTAS F ON R.ID_FERRAMENTA = F.ID_FERRAMENTA
+                    JOIN USUARIOS UF ON UF.ID_USUARIO = F.ID_USUARIO
+                    JOIN USUARIOS UR ON UR.ID_USUARIO = R.ID_USUARIO
+                    WHERE F.ID_USUARIO=?
                 """, (id_usuario,))
             else: 
-                cursor.execute("SELECT * FROM REGISTROS WHERE ID_USUARIO=?", (id_usuario,))
+                cursor.execute("""SELECT R.*, F.*, UR.NOME, UF.NOME as NOME_DONO, F.ID_USUARIO as ID_USUARIO_DONO FROM REGISTROS R
+                    JOIN FERRAMENTAS F ON R.ID_FERRAMENTA = F.ID_FERRAMENTA
+                    JOIN USUARIOS UF ON UF.ID_USUARIO = F.ID_USUARIO
+                    JOIN USUARIOS UR ON UR.ID_USUARIO = R.ID_USUARIO
+                    WHERE R.ID_USUARIO=?""",
+                (id_usuario,))
             
             registros = cursor.fetchall()
             return [self.registro_to_dict(x) for x in registros] if registros else []
@@ -514,12 +526,18 @@ class ComunicacaoBanco:
             cursor = conn.cursor()
             if dono:
                 cursor.execute("""
-                    SELECT REGISTROS.* FROM REGISTROS
-                    JOIN FERRAMENTAS ON REGISTROS.ID_FERRAMENTA = FERRAMENTAS.ID_FERRAMENTA
-                    WHERE FERRAMENTAS.ID_USUARIO=? AND REGISTROS.FINALIZADO=0 AND REGISTROS.AUTORIZADO=1
+                    SELECT R.*, F.*, UR.NOME, UF.NOME as NOME_DONO, F.ID_USUARIO as ID_USUARIO_DONO FROM REGISTROS R
+                    JOIN FERRAMENTAS F ON R.ID_FERRAMENTA = F.ID_FERRAMENTA
+                    JOIN USUARIOS UF ON UF.ID_USUARIO = F.ID_USUARIO
+                    JOIN USUARIOS UR ON UR.ID_USUARIO = R.ID_USUARIO
+                    WHERE F.ID_USUARIO=? AND R.ID_STATUS=3
                 """, (id_usuario,))
             else:
-                cursor.execute("SELECT * FROM REGISTROS WHERE ID_USUARIO=? AND FINALIZADO=0 AND AUTORIZADO=1", (id_usuario,))
+                cursor.execute("""SELECT R.*, F.*, UR.NOME, UF.NOME as NOME_DONO, F.ID_USUARIO as ID_USUARIO_DONO FROM REGISTROS R
+                    JOIN FERRAMENTAS F ON R.ID_FERRAMENTA = F.ID_FERRAMENTA
+                    JOIN USUARIOS UF ON UF.ID_USUARIO = F.ID_USUARIO
+                    JOIN USUARIOS UR ON UR.ID_USUARIO = R.ID_USUARIO
+                    WHERE R.ID_USUARIO=? AND ID_STATUS=3""", (id_usuario,))
             
             registros = cursor.fetchall()
             return [self.registro_to_dict(x) for x in registros] if registros else []
@@ -538,9 +556,11 @@ class ComunicacaoBanco:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    SELECT REGISTROS.* FROM REGISTROS
-                    JOIN FERRAMENTAS ON REGISTROS.ID_FERRAMENTA = FERRAMENTAS.ID_FERRAMENTA
-                    WHERE FERRAMENTAS.ID_USUARIO=? AND REGISTROS.AUTORIZADO=0 AND REGISTROS.FINALIZADO=0
+                    SELECT R.*, F.*, UR.NOME, UF.NOME as NOME_DONO, F.ID_USUARIO as ID_USUARIO_DONO FROM REGISTROS R
+                    JOIN FERRAMENTAS F ON R.ID_FERRAMENTA = F.ID_FERRAMENTA
+                    JOIN USUARIOS UF ON UF.ID_USUARIO = F.ID_USUARIO
+                    JOIN USUARIOS UR ON UR.ID_USUARIO = R.ID_USUARIO
+                    WHERE F.ID_USUARIO=? AND R.ID_STATUS=1
                 """, (id_usuario,))
                 registros = cursor.fetchall()
                 return [self.registro_to_dict(x) for x in registros] if registros else []
@@ -548,8 +568,11 @@ class ComunicacaoBanco:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    SELECT * FROM REGISTROS
-                    WHERE ID_USUARIO=? AND AUTORIZADO=0 AND FINALIZADO=0
+                    SELECT R.*, F.*, UR.NOME, UF.NOME as NOME_DONO, F.ID_USUARIO as ID_USUARIO_DONO FROM REGISTROS R
+                    JOIN FERRAMENTAS F ON R.ID_FERRAMENTA = F.ID_FERRAMENTA
+                    JOIN USUARIOS UF ON UF.ID_USUARIO = F.ID_USUARIO
+                    JOIN USUARIOS UR ON UR.ID_USUARIO = R.ID_USUARIO
+                    WHERE R.ID_USUARIO=? AND R.ID_STATUS=1
                 """, (id_usuario,))
         
         registros = cursor.fetchall()
@@ -570,14 +593,19 @@ class ComunicacaoBanco:
             curr_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
             if dono:
                 cursor.execute("""
-                    SELECT REGISTROS.* FROM REGISTROS
-                    JOIN FERRAMENTAS ON REGISTROS.ID_FERRAMENTA = FERRAMENTAS.ID_FERRAMENTA
-                    WHERE FERRAMENTAS.ID_USUARIO=? AND DT_DEVOLUCAO < ? AND FINALIZADO=0
+                    SELECT R.*, F.*, UR.NOME, UF.NOME as NOME_DONO, F.ID_USUARIO as ID_USUARIO_DONO FROM REGISTROS R
+                    JOIN FERRAMENTAS F ON R.ID_FERRAMENTA = F.ID_FERRAMENTA
+                    JOIN USUARIOS UF ON UF.ID_USUARIO = F.ID_USUARIO
+                    JOIN USUARIOS UR ON UR.ID_USUARIO = R.ID_USUARIO
+                    WHERE F.ID_USUARIO=? AND R.DT_DEVOLUCAO < ? AND R.ID_STATUS=3
                 """, (id_usuario, curr_time))
             else:
                 cursor.execute("""
-                    SELECT * FROM REGISTROS
-                    WHERE ID_USUARIO=? AND DT_DEVOLUCAO < ? AND FINALIZADO=0
+                    SELECT R.*, F.*, UR.NOME, UF.NOME as NOME_DONO, F.ID_USUARIO as ID_USUARIO_DONO FROM REGISTROS R
+                    JOIN FERRAMENTAS F ON R.ID_FERRAMENTA = F.ID_FERRAMENTA
+                    JOIN USUARIOS UF ON UF.ID_USUARIO = F.ID_USUARIO
+                    JOIN USUARIOS UR ON UR.ID_USUARIO = R.ID_USUARIO
+                    WHERE R.ID_USUARIO=? AND R.DT_DEVOLUCAO < ? AND R.ID_STATUS=3
                 """, (id_usuario, curr_time))
             registros = cursor.fetchall()
             return [self.registro_to_dict(x) for x in registros] if registros else []

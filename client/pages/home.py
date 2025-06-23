@@ -17,12 +17,12 @@ layout = html.Div([
     # CABEÇALHO DE BUSCA (RESPONSIVO)
     dbc.Row([
         # Campo de busca: 5 colunas em tela grande, 12 em pequenas
-        dbc.Col(xs=12, md=6, lg=5, children=[
+        dbc.Col(xs=12, md=6, lg=6, children=[
             html.Label("Buscar"),
             dbc.InputGroup([
                 dbc.InputGroupText(html.I(className="bi bi-search")),
                 dbc.Input(id="busca-input", placeholder="Buscar ferramenta...")
-            ])
+            ], style={"height":"50px"})
         ]),
 
         # Data de intervalo: 12 cols no XS, 6 no MD, 3 no LG
@@ -34,7 +34,7 @@ layout = html.Div([
                 start_date_placeholder_text="Início",
                 end_date_placeholder_text="Fim",
                 display_format='DD/MM/YYYY',
-                className='w-100'
+                style={"height":"50px"}
             )
         ]),
 
@@ -45,7 +45,8 @@ layout = html.Div([
                 id="input-categoria",
                 options=[{"label": t.label(), "value": t.value} for t in Tool],
                 placeholder="Selecione",
-                clearable=True
+                clearable=True, 
+                style={"height":"50px"}
             )
         ])
     ]),
@@ -111,7 +112,7 @@ def atualizar_resultado(busca, data_inicio, data_fim, id_categoria):
         card = dbc.Card([
             # Cabeçalho do card com fundo marrom claro e ícone
             html.Div([
-                html.Span(icone, className="me-2"),
+                html.Img(src=icone, className="me-2", height="30px"),
                 html.Span(f["nome"], className="fw-bold")
             ], className="p-2", style={
                 "backgroundColor": "#D2B48C",

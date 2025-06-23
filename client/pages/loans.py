@@ -8,14 +8,14 @@ from utils.enums.categorias import Tool
 
 register_page(
     __name__,
-    path="/my_loans",
-    title="Emprestar",
-    name="Emprestar",
+    path="/loans",
+    title="Pedir Emprestado",
+    name="Pedir Emprestado",
 )
 
 layout = html.Div([
-    dcc.Store(id='meus-emprestimos-refresh'),
-    html.Div(id='meus-emprestimos-container')
+    dcc.Store(id='emprestimos-refresh'),
+    html.Div(id='emprestimos-container')
 ], style={"padding": "20px"})
 
 # Função para criar os cards dos empréstimos
@@ -23,34 +23,6 @@ def criar_card_emprestimo(emprestimo):
     botoes = []
     status = LoanStatus.from_value(int(emprestimo["id_status"]))
     categoria = Tool.from_value(int(emprestimo["id_categoria"]))
-    if status == LoanStatus.AGUARDANDO_AUTORIZACAO:
-        botoes.append(
-            dbc.Button("Aceitar", style={
-                "backgroundColor": "#4B2E2E",
-                "borderColor": "#4B2E2E",
-                "color": "white",
-                "marginBottom": "10px",
-                "width": "100%"
-            }, id={"type": "btn-autorizar-emprestimo", "index": emprestimo["id_registro"]})
-        )        
-        botoes.append(
-            dbc.Button("Rejeitar", style={
-                "backgroundColor": "#4B2E2E",
-                "borderColor": "#4B2E2E",
-                "color": "white",
-                "width": "100%"
-            }, id={"type": "btn-rejeitar-emprestimo", "index": emprestimo["id_registro"]})
-        )
-    elif status == LoanStatus.EMPRESTADO:
-        botoes.append(
-            dbc.Button("Encerrar empréstimo", style={
-                "backgroundColor": "#4B2E2E",
-                "borderColor": "#4B2E2E",
-                "color": "white",
-                "width": "100%"
-            }, id={"type": "btn-devolver-emprestimo", "index": emprestimo["id_registro"]})
-        )
-
     return dbc.Card(
         dbc.CardBody(
             dbc.Row([
@@ -59,8 +31,7 @@ def criar_card_emprestimo(emprestimo):
                 dbc.Col(html.Div(emprestimo['nome_usuario']), width=2),
                 dbc.Col(html.Div(emprestimo["dt_emprestimo"]), width=2),
                 dbc.Col(html.Div(emprestimo["dt_devolucao"]), width=2),
-                dbc.Col(html.Div(status.label()), width=1),
-                dbc.Col(html.Div(botoes), width=1),
+                dbc.Col(html.Div(status.label()), width=2)
             ], align="center", className="g-2")
         ),
         style={"marginBottom": "10px", "backgroundColor": "white", "width": "100%"},
@@ -70,8 +41,8 @@ def criar_card_emprestimo(emprestimo):
 
 # Callback para carregar os empréstimos do usuário
 @callback(
-    Output('meus-emprestimos-container', 'children'),
-    Input('meus-emprestimos-refresh', 'data'),
+    Output('emprestimos-container', 'children'),
+    Input('emprestimos-refresh', 'data'),
     State('user-store', 'data')
 )
 def carregar_emprestimos(_, user_data):
@@ -80,7 +51,7 @@ def carregar_emprestimos(_, user_data):
         return html.P("Usuário não encontrado.")
 
     try:
-        emprestimos = loan_requests.buscar_emprestimos(id_usuario, True)    
+        emprestimos = loan_requests.buscar_emprestimos(id_usuario, False)    
     except Exception as e:
         return html.P(f"Erro ao carregar os dados: {str(e)}")
 
@@ -90,11 +61,10 @@ def carregar_emprestimos(_, user_data):
     cabecalho = dbc.Row([
         dbc.Col(html.Strong("Ferramenta"), width=2),
         dbc.Col(html.Strong("Categoria"), width=2),
-        dbc.Col(html.Strong("Morador"), width=2),
+        dbc.Col(html.Strong("Dono"), width=2),
         dbc.Col(html.Strong("Início"), width=2),
         dbc.Col(html.Strong("Devolução"), width=2),
-        dbc.Col(html.Strong("Status"), width=1),
-        dbc.Col(html.Span(""), width=1),
+        dbc.Col(html.Strong("Status"), width=2)
     ], className="p-2",
                         style={
                             "marginBottom": "5px", 
@@ -112,7 +82,7 @@ def carregar_emprestimos(_, user_data):
 
 # Callback para lidar com os botões de aceitar/encerrar empréstimo
 @callback(
-    Output('meus-emprestimos-refresh', 'data', allow_duplicate=True),
+    Output('emprestimos-refresh', 'data', allow_duplicate=True),
     Input({'type': 'btn-autorizar-emprestimo', 'index': ALL}, 'n_clicks'),
     State({'type': 'btn-autorizar-emprestimo', 'index': ALL}, 'id'),
     prevent_initial_call=True
@@ -130,7 +100,7 @@ def tratar_click_botoes(n_clicks, ids):
         return f"Erro: {str(e)}"
 
 @callback(
-    Output('meus-emprestimos-refresh', 'data', allow_duplicate=True),
+    Output('emprestimos-refresh', 'data', allow_duplicate=True),
     Input({'type': 'btn-rejeitar-emprestimo', 'index': ALL}, 'n_clicks'),
     State({'type': 'btn-rejeitar-emprestimo', 'index': ALL}, 'id'),
     prevent_initial_call=True
@@ -148,7 +118,7 @@ def tratar_click_botoes(n_clicks, ids):
         return f"Erro: {str(e)}"
 
 @callback(
-    Output('meus-emprestimos-refresh', 'data', allow_duplicate=True),
+    Output('emprestimos-refresh', 'data', allow_duplicate=True),
     Input({'type': 'btn-devolver-emprestimo', 'index': ALL}, 'n_clicks'),
     State({'type': 'btn-devolver-emprestimo', 'index': ALL}, 'id'),
     prevent_initial_call=True

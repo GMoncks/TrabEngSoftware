@@ -4,6 +4,9 @@ import tempfile
 import time
 import pytest
 from sql_tools import ComunicacaoBanco
+import sys
+sys.path.append("..") 
+from enums.status import LoanStatus
 
 @pytest.fixture
 def banco():
@@ -41,29 +44,39 @@ def banco():
         "ID_USUARIO" INTEGER NOT NULL, -- Usuario que fez o empréstimo
         "DT_EMPRESTIMO" TIMESTAMP NOT NULL, -- Data do empréstimo
         "DT_DEVOLUCAO" TIMESTAMP, -- Data da devolução
-        "AUTORIZADO" INT DEFAULT 0 NOT NULL, -- Aceitação do empréstimo
-        "FINALIZADO" INT DEFAULT 0 NOT NULL, -- Aceitação da devolução
+        "ID_STATUS" INT DEFAULT 1 NOT NULL, -- Status do empréstimo
         "DT_REGISTRO" TIMESTAMP DEFAULT (DATETIME('now', '-3 hours')) NOT NULL 
     );
     CREATE TABLE CATEGORIAS (
         id_categoria   INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         nome_categoria TEXT    NOT NULL
     );
-    INSERT INTO CATEGORIAS (nome_categoria, id_categoria)
+    INSERT INTO CATEGORIAS (nome_categoria)
     VALUES
-        ('Tesoura', 1),
-        ('Pá', 2),
-        ('Esmerilhadeira', 3),
-        ('Lixadeira', 4),
-        ('Parafusadeira', 5),
-        ('Furradeira', 6),
-        ('Marreta', 7),
-        ('Trena', 8),
-        ('Chave Phillips', 9),
-        ('Serra', 10),
-        ('Alicate', 11),
-        ('Chave de Fenda', 12),
-        ('Martelo', 13);
+        ('Tesoura'),
+        ('Pá'),
+        ('Esmerilhadeira'),
+        ('Lixadeira'),
+        ('Parafusadeira'),
+        ('Furradeira'),
+        ('Marreta'),
+        ('Trena'),
+        ('Chave Phillips'),
+        ('Serra'),
+        ('Alicate'),
+        ('Chave de Fenda'),
+        ('Martelo');    
+    CREATE TABLE STATUS (
+        ID_STATUS   INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        NOME_STATUS TEXT    NOT NULL
+    );
+
+    INSERT INTO STATUS (NOME_STATUS)
+    VALUES
+        ('Aguardando autorização'),
+        ('Não Autorizado'),
+        ('Emprestado'),
+        ('Devolvido');    
     """)
     # Usuário 1 (dono)
     cursor.execute("INSERT INTO USUARIOS (EMAIL, SENHA, NOME, CPF, TELEFONE) VALUES (?, ?, ?, ?, ?)",
@@ -81,8 +94,8 @@ def banco():
     init_time = "2000-01-01 10:00:00"
     end_time = "2000-01-02 10:00:00"  # Use a fixed past time for testing
     cursor.execute("""INSERT INTO REGISTROS 
-        (ID_USUARIO, ID_FERRAMENTA, DT_EMPRESTIMO, DT_DEVOLUCAO, AUTORIZADO, FINALIZADO)
-        VALUES (?, ?, ?, ?, 1, 0)""",
+        (ID_USUARIO, ID_FERRAMENTA, DT_EMPRESTIMO, DT_DEVOLUCAO, ID_STATUS)
+        VALUES (?, ?, ?, ?, 3)""",
         (user2_id, ferramenta_id, init_time, end_time))
     conn.commit()
     conn.close()
@@ -98,14 +111,17 @@ def test_usuario_to_dict_and_ferramenta_to_dict_and_registro_to_dict(banco):
     assert user_dict["email"] == "user1@example.com"
     # Test ferramenta_to_dict
     with sqlite3.connect(banco.db_path) as conn:
-        ferramenta = conn.execute("SELECT * FROM FERRAMENTAS WHERE NOME=?", ("hammer",)).fetchone()
+        ferramenta = conn.execute("""SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA 
+                           JOIN USUARIOS ON USUARIOS.ID_USUARIO = FERRAMENTAS.ID_USUARIO WHERE FERRAMENTAS.NOME=?""", ("hammer",)).fetchone()
     ferramenta_dict = banco.ferramenta_to_dict(ferramenta)
     assert ferramenta_dict["nome"] == "hammer"
     # Test registro_to_dict
     with sqlite3.connect(banco.db_path) as conn:
-        registro = conn.execute("SELECT * FROM REGISTROS").fetchone()
+        registro = conn.execute("""SELECT R.*, F.*, U.NOME, F.ID_USUARIO as ID_USUARIO_DONO FROM REGISTROS R
+                    JOIN FERRAMENTAS F ON R.ID_FERRAMENTA = F.ID_FERRAMENTA
+                    JOIN USUARIOS U ON U.ID_USUARIO = F.ID_USUARIO""").fetchone()
     registro_dict = banco.registro_to_dict(registro)
-    assert registro_dict["id_usuario"] == 2
+    assert registro_dict["id_usuario"] == 1
 
 def test_cadastrar_usuario_and_validar_login(banco):
     banco.cadastrar_usuario("test2@email.com", "pw123", "home", "Test Two", "cpf2", "phone2")
@@ -175,8 +191,8 @@ def test_reservar_item_and_retirada_and_devolucao(banco):
     with sqlite3.connect(banco.db_path) as conn:
         disp = conn.execute("SELECT FERRAMENTA_DISPONIVEL FROM FERRAMENTAS WHERE ID_FERRAMENTA=?", (ferramenta_id,)).fetchone()[0]
         assert disp == 1
-        finalizado = conn.execute("SELECT FINALIZADO FROM REGISTROS WHERE ID_REGISTRO=?", (registro_id,)).fetchone()[0]
-        assert finalizado == 1
+        finalizado = conn.execute("SELECT ID_STATUS FROM REGISTROS WHERE ID_REGISTRO=?", (registro_id,)).fetchone()[0]
+        assert finalizado == LoanStatus.DEVOLVIDO.value
 
 def test_reservar_item_indisponivel(banco):
     user_id = 1

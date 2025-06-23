@@ -53,7 +53,8 @@ app.layout = dbc.Container(id="main-container", fluid=True, children=[
                 html.Div([
             dbc.Button("Buscar Ferramentas",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/home", id="btn-home"),
             dbc.Button("Minhas Ferramentas",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/my_tools", id="btn-my-tools"),
-            dbc.Button("Meus Empréstimos",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/my_loans", id="btn-my-loans"),
+            dbc.Button("Emprestar",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/my_loans", id="btn-my-loans"),
+            dbc.Button("Pedir Emprestado",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/loans", id="btn-loans"),
             dbc.Button("Cadastro",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/register", id="btn-register"),
                 ], id="menu_links")
             ])
@@ -105,21 +106,24 @@ def mostrar_usuario(data):
     Output("btn-home", "style"),
     Output("btn-my-tools", "style"),
     Output("btn-my-loans", "style"),
+    Output("btn-loans", "style"),
     Output("btn-register", "style"),
     Input("url", "pathname"),
     prevent_initial_call=True
 )
 def atualizar_style_botoes(pathname):
     if pathname == "/home":
-        return custom_css["sidebar_link_hover"], custom_css["sidebar_link"], custom_css["sidebar_link"], custom_css["sidebar_link"]
+        return custom_css["sidebar_link_hover"], custom_css["sidebar_link"], custom_css["sidebar_link"], custom_css["sidebar_link"], custom_css["sidebar_link"]
     elif pathname == "/my_tools":
-        return custom_css["sidebar_link"], custom_css["sidebar_link_hover"], custom_css["sidebar_link"], custom_css["sidebar_link"]
+        return custom_css["sidebar_link"], custom_css["sidebar_link_hover"], custom_css["sidebar_link"], custom_css["sidebar_link"], custom_css["sidebar_link"]
     elif pathname == "/my_loans":
-        return custom_css["sidebar_link"], custom_css["sidebar_link"], custom_css["sidebar_link_hover"], custom_css["sidebar_link"]
+        return custom_css["sidebar_link"], custom_css["sidebar_link"], custom_css["sidebar_link_hover"], custom_css["sidebar_link"], custom_css["sidebar_link"]
+    elif pathname == "/loans":
+        return custom_css["sidebar_link"], custom_css["sidebar_link"], custom_css["sidebar_link"], custom_css["sidebar_link_hover"], custom_css["sidebar_link"]
     elif pathname == "/register":
-        return custom_css["sidebar_link"], custom_css["sidebar_link"], custom_css["sidebar_link"], custom_css["sidebar_link_hover"]
+        return custom_css["sidebar_link"], custom_css["sidebar_link"], custom_css["sidebar_link"], custom_css["sidebar_link"], custom_css["sidebar_link_hover"]
     else:
-        return no_update, no_update, no_update, no_update
+        return no_update, no_update, no_update, no_update, no_update
 
 
 if __name__ == "__main__":

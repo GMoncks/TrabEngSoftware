@@ -44,18 +44,18 @@ class Tool(Enum):
         
     def icone(self):
         icons = {
-            Tool.TESOURA: "scissor.png",
-            Tool.PA: "shovel.png",
-            Tool.ESMERILHADEIRA: "grinder.png",
-            Tool.LIXADEIRA: "sander.png",
-            Tool.PARAFUSADEIRA: "drilling-machine.png",
-            Tool.FURADEIRA: "drill.png",
-            Tool.MARRETA: "sledgehammer.png",
-            Tool.TRENA: "tape-measure.png",
-            Tool.CHAVE_PHILLIPS: "p-screwdriver.png",
-            Tool.SERRA: "hand-saw.png",
-            Tool.ALICATE: "pliers.png",
-            Tool.CHAVE_DE_FENDA: "screwdriver.png",
-            Tool.MARTELO: "hammer.png",
+            Tool.TESOURA: "Tesoura",
+            Tool.PA: "Pá",
+            Tool.ESMERILHADEIRA: "Esmerilhadeira",
+            Tool.LIXADEIRA: "Lixadeira",
+            Tool.PARAFUSADEIRA: "Parafusadeira",
+            Tool.FURADEIRA: "Furadeira",
+            Tool.MARRETA: "Marreta",
+            Tool.TRENA: "Trena",
+            Tool.CHAVE_PHILLIPS: "Chave Phillips",
+            Tool.SERRA: "Serra",
+            Tool.ALICATE: "Alicate",
+            Tool.CHAVE_DE_FENDA: "Chave de Fenda",
+            Tool.MARTELO: "Martelo",
         }
-        return f"/assets/{icons[self]}"
+        return icons[self]

@@ -56,7 +56,12 @@ layout = dbc.Container([
                 ])
             ], className="mb-4"),
 
-            dbc.Button("Cadastrar", id="btn-submit", color="primary", className="me-2"),
+            dbc.Button("Cadastrar", id="btn-submit", color="primary", className="me-2", 
+                        style={
+                            "backgroundColor": "#4B2E2E",
+                            "borderColor": "#4B2E2E",
+                            "color": "white"
+                        }),
         ]),
 
         html.Hr(),

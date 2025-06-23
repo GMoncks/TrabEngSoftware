@@ -3,18 +3,18 @@ CREATE TABLE CATEGORIAS (
     NOME_CATEGORIA TEXT    NOT NULL
 );
 
-INSERT INTO CATEGORIAS (NOME_CATEGORIA, ID_CATEGORIA)
+INSERT INTO CATEGORIAS (NOME_CATEGORIA)
 VALUES
-    ('Tesoura', 1),
-    ('Pá', 2),
-    ('Esmerilhadeira', 3),
-    ('Lixadeira', 4),
-    ('Parafusadeira', 5),
-    ('Furradeira', 6),
-    ('Marreta', 7),
-    ('Trena', 8),
-    ('Chave Phillips', 9),
-    ('Serra', 10),
-    ('Alicate', 11),
-    ('Chave de Fenda', 12),
-    ('Martelo', 13);
+    ('Tesoura'),
+    ('Pá'),
+    ('Esmerilhadeira'),
+    ('Lixadeira'),
+    ('Parafusadeira'),
+    ('Furradeira'),
+    ('Marreta'),
+    ('Trena'),
+    ('Chave Phillips'),
+    ('Serra'),
+    ('Alicate'),
+    ('Chave de Fenda'),
+    ('Martelo');
