@@ -13,36 +13,57 @@ def banco():
     cursor = conn.cursor()
     cursor.executescript("""
     CREATE TABLE USUARIOS (
-        ID_USUARIO INTEGER PRIMARY KEY AUTOINCREMENT,
-        DT_CADASTRO TIMESTAMP DEFAULT current_timestamp,
-        EMAIL VARCHAR(255) NOT NULL UNIQUE,
-        SENHA VARCHAR(255) NOT NULL,
-        NOME VARCHAR(255) NOT NULL,
-        ID_CASA VARCHAR(255),
-        CPF VARCHAR(255) NOT NULL UNIQUE,
-        TELEFONE VARCHAR(255) NOT NULL UNIQUE,
-        INADIMPLENTE INT DEFAULT 0 NOT NULL,
-        ADMIN INT DEFAULT 0 NOT NULL,
-        DT_ULTIMO_ACESSO TIMESTAMP DEFAULT current_timestamp
+        "ID_USUARIO" INTEGER PRIMARY KEY AUTOINCREMENT,
+        "DT_CADASTRO" TIMESTAMP DEFAULT (DATETIME('now', '-3 hours')) NOT NULL,
+        "EMAIL" VARCHAR(255) NOT NULL UNIQUE,
+        "SENHA" VARCHAR(255) NOT NULL,
+        "NOME" VARCHAR(255) NOT NULL,
+        "ID_CASA" VARCHAR(255) DEFAULT NULL,
+        "CPF" VARCHAR(255) NOT NULL UNIQUE,
+        "TELEFONE" VARCHAR(255) NOT NULL UNIQUE,
+        "INADIMPLENTE" INT DEFAULT 0 NOT NULL,
+        "ADMIN" INT DEFAULT 0 NOT NULL,
+        "DT_ULTIMO_ACESSO" TIMESTAMP DEFAULT (DATETIME('now', '-3 hours')) NOT NULL
     );
     CREATE TABLE FERRAMENTAS (
-        ID_FERRAMENTA INTEGER PRIMARY KEY AUTOINCREMENT,
-        ID_USUARIO INTEGER NOT NULL,
-        EMAIL VARCHAR(255) NOT NULL,
-        NOME VARCHAR(255) NOT NULL,
-        DESCRICAO TEXT NOT NULL,
-        DT_CADASTRO TIMESTAMP DEFAULT current_timestamp,
-        FERRAMENTA_DISPONIVEL INT DEFAULT 1 NOT NULL
+        "ID_FERRAMENTA" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        "NOME" VARCHAR(255) NOT NULL,
+        "DESCRICAO" TEXT NOT NULL,
+        "ID_CATEGORIA" INTEGER NOT NULL,
+        "DT_CADASTRO" TIMESTAMP DEFAULT (DATETIME('now', '-3 hours')) NOT NULL,
+        "ID_USUARIO" INTEGER NOT NULL, -- Usuário que cadastrou a ferramenta
+        "FERRAMENTA_DISPONIVEL" INT DEFAULT 1 NOT NULL, -- Ferramenta disponível para empréstimo no presente momento
+        "FOTO" TEXT DEFAULT NULL -- URL da foto da ferramenta
     );
     CREATE TABLE REGISTROS (
-        ID_REGISTRO INTEGER PRIMARY KEY AUTOINCREMENT,
-        ID_USUARIO INTEGER NOT NULL,
-        ID_FERRAMENTA INTEGER NOT NULL,
-        DT_EMPRESTIMO TIMESTAMP,
-        DT_DEVOLUCAO TIMESTAMP,
-        AUTORIZADO INT DEFAULT 0 NOT NULL,
-        FINALIZADO INT DEFAULT 0 NOT NULL
+        "ID_REGISTRO" INTEGER PRIMARY KEY AUTOINCREMENT,
+        "ID_FERRAMENTA" integer NOT NULL, -- Ferramenta emprestada
+        "ID_USUARIO" INTEGER NOT NULL, -- Usuario que fez o empréstimo
+        "DT_EMPRESTIMO" TIMESTAMP NOT NULL, -- Data do empréstimo
+        "DT_DEVOLUCAO" TIMESTAMP, -- Data da devolução
+        "AUTORIZADO" INT DEFAULT 0 NOT NULL, -- Aceitação do empréstimo
+        "FINALIZADO" INT DEFAULT 0 NOT NULL, -- Aceitação da devolução
+        "DT_REGISTRO" TIMESTAMP DEFAULT (DATETIME('now', '-3 hours')) NOT NULL 
     );
+    CREATE TABLE CATEGORIAS (
+        id_categoria   INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        nome_categoria TEXT    NOT NULL
+    );
+    INSERT INTO CATEGORIAS (nome_categoria, id_categoria)
+    VALUES
+        ('Tesoura', 1),
+        ('Pá', 2),
+        ('Esmerilhadeira', 3),
+        ('Lixadeira', 4),
+        ('Parafusadeira', 5),
+        ('Furradeira', 6),
+        ('Marreta', 7),
+        ('Trena', 8),
+        ('Chave Phillips', 9),
+        ('Serra', 10),
+        ('Alicate', 11),
+        ('Chave de Fenda', 12),
+        ('Martelo', 13);
     """)
     # Usuário 1 (dono)
     cursor.execute("INSERT INTO USUARIOS (EMAIL, SENHA, NOME, CPF, TELEFONE) VALUES (?, ?, ?, ?, ?)",
@@ -53,8 +74,8 @@ def banco():
                    ("user2@example.com", "hash2", "User Two", "456", "556"))
     user2_id = cursor.lastrowid
     # Ferramenta do usuário 1
-    cursor.execute("INSERT INTO FERRAMENTAS (ID_USUARIO, EMAIL, NOME, DESCRICAO) VALUES (?, ?, ?, ?)",
-                   (user1_id, "user1@example.com", "hammer", "A hammer"))
+    cursor.execute("INSERT INTO FERRAMENTAS (ID_USUARIO, NOME, DESCRICAO, ID_CATEGORIA) VALUES (?, ?, ?, ?)",
+                   (user1_id, "hammer", "A hammer", 1))
     ferramenta_id = cursor.lastrowid
     # Insert registro (overdue)
     init_time = "2000-01-01 10:00:00"
@@ -98,9 +119,9 @@ def test_validar_login_wrong_password(banco):
     with pytest.raises(Exception):
         banco.validar_login("test3@email.com", "wrongpw")
 
-def test_cadastrar_item_and_remover(banco):
+def test_cadastrar_ferramenta_and_remover(banco):
     user_id = 1
-    banco.cadastrar_item(user_id, "serrote", "Serrote de corte", "user1@example.com")
+    banco.cadastrar_ferramenta(user_id, "serrote", "Serrote de corte", 1)
     with sqlite3.connect(banco.db_path) as conn:
         ferramenta = conn.execute("SELECT * FROM FERRAMENTAS WHERE NOME=?", ("serrote",)).fetchone()
         assert ferramenta is not None
@@ -133,8 +154,8 @@ def test_modificar_item_wrong_owner(banco):
     with pytest.raises(Exception):
         banco.modificar_item(ferramenta_id, 999, "desc")
 
-def test_buscar_itens_disponiveis(banco):
-    result = banco.buscar_itens_disponiveis("hammer")
+def test_buscar_ferramentas(banco):
+    result = banco.buscar_ferramentas("hammer")
     assert isinstance(result, list)
 
 def test_reservar_item_and_retirada_and_devolucao(banco):
