@@ -12,8 +12,9 @@ def buscar_ferramentas():
     data_emprestimo = request.args.get('data_emprestimo')
     data_devolucao = request.args.get('data_devolucao')
     categoria = request.args.get('id_categoria')
+    id_dono = request.args.get('id_usuario')
     try:
-        ferramentas = banco.buscar_itens_disponiveis(nome, categoria, data_emprestimo, data_devolucao)
+        ferramentas = banco.buscar_ferramentas(nome, categoria, data_emprestimo, data_devolucao, id_dono)
         return jsonify(ferramentas), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
@@ -22,7 +23,7 @@ def buscar_ferramentas():
 @database.route('/ferramentas/cadastrar', methods=['POST'])
 def cadastrar_ferramenta():
     try:
-        banco.cadastrar_item(
+        banco.cadastrar_ferramenta(
             int(request.form['id_usuario']),
             request.form['nome'],
             request.form['descricao'],
