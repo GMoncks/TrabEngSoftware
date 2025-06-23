@@ -5,8 +5,8 @@ class ToolRequest:
     def __init__(self, baseURL):
         self.buscar_ferramentas = '/ferramentas/buscar'
         self.buscar_ferramenta = '/ferramentas/id'
-        self.cadastrar_ferramenta = '/ferramentas/cadastrar'
-        self.remover_ferramenta = '/ferramentas/remover'
+        self.enviar_ferramenta = '/ferramentas/cadastrar'
+        self.excluir_ferramenta = '/ferramentas/remover'
         self.editar_ferramenta = '/ferramentas/editar'
         self.request = request_helper(baseURL)
 
@@ -51,3 +51,20 @@ class ToolRequest:
         consulta = {'id' : id}        
         return self.request.get(self.buscar_ferramenta, consulta)
 
+    def cadastrar_ferramenta(self, id_usuario, nome, descricao, id_categoria, foto):
+        return self.request.post(self.enviar_ferramenta, {
+            'id_usuario':id_usuario,
+            'nome':nome,
+            'descricao':descricao,
+            'id_categoria':id_categoria,
+            'foto':foto
+        }
+    )
+
+    def remover_ferramenta(self, id_ferramenta, id_usuario):
+        return self.request.post(self.excluir_ferramenta, 
+            {
+                'id_ferramenta':id_ferramenta,
+                'id_usuario':id_usuario
+            }
+        )
