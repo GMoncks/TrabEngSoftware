@@ -14,4 +14,5 @@ def create_app():
 app = create_app()
 app.register_blueprint(login_api.login)
 app.register_blueprint(database_api.database)
-app.run()
+# TODO: Retirar debug=True
+app.run(debug=True)

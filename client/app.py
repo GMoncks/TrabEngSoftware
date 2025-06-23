@@ -123,4 +123,5 @@ def atualizar_style_botoes(pathname):
 
 
 if __name__ == "__main__":
+    # TODO: Retirar debug=True
     app.run(debug=True, port=8050)
