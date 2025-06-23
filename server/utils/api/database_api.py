@@ -102,3 +102,13 @@ def buscar_registros():
         return jsonify(registros), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+    
+# 12. Buscar ferramenta por id
+@database.route('/ferramentas/id', methods=['GET'])
+def buscar_ferramenta():
+    id = request.args.get('id')
+    try:
+        ferramenta = banco.buscar_item(id)
+        return jsonify(ferramenta), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400

@@ -61,6 +61,7 @@ class ComunicacaoBanco:
             "id_categoria": query_return[3],
             "dt_cadastro": query_return[4],
             "id_usuario": query_return[5],
+            "nome_usuario":  query_return[14],
             "ferramenta_disponivel": query_return[6],
             "foto": query_return[7],
             "nome_categoria":  query_return[9],
@@ -196,18 +197,47 @@ class ComunicacaoBanco:
             
             if not id_categoria and not (data_emprestimo and data_devolucao):
                 cursor.execute("""SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA 
-                               WHERE lower(NOME) LIKE ?""", (nome,))
-            elif not (data_emprestimo and data_devolucao):
+                               JOIN USUARIOS ON USUARIOS.ID_USUARIO = FERRAMENTAS.ID_USUARIO
+                               WHERE lower(FERRAMENTAS.NOME) LIKE ?""", (nome,))
+            elif id_categoria and not (data_emprestimo and data_devolucao):
+                cursor.execute("""SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA 
+                               JOIN USUARIOS ON USUARIOS.ID_USUARIO = FERRAMENTAS.ID_USUARIO
+                               WHERE lower(FERRAMENTAS.NOME) LIKE ? AND FERRAMENTAS.ID_CATEGORIA = ?""", (nome,id_categoria))
+            elif not id_categoria and (data_emprestimo and data_devolucao): 
                 cursor.execute("""SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA
-                               WHERE lower(NOME) LIKE ? AND FERRAMENTAS.ID_CATEGORIA = ?""", (nome,id_categoria))
+                               JOIN USUARIOS ON USUARIOS.ID_USUARIO = FERRAMENTAS.ID_USUARIO
+                               WHERE lower(FERRAMENTAS.NOME) LIKE ? AND ID_FERRAMENTA NOT IN 
+                               (SELECT ID_FERRAMENTA FROM REGISTROS WHERE DT_EMPRESTIMO <= ? AND DT_DEVOLUCAO >= ?)""", 
+                               (nome, data_devolucao, data_emprestimo))
             else: 
                 cursor.execute("""SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA
-                               WHERE lower(NOME) LIKE ? AND FERRAMENTAS.ID_CATEGORIA = ? AND ID_FERRAMENTA NOT IN 
+                               JOIN USUARIOS ON USUARIOS.ID_USUARIO = FERRAMENTAS.ID_USUARIO
+                               WHERE lower(FERRAMENTAS.NOME) LIKE ? AND FERRAMENTAS.ID_CATEGORIA = ? AND ID_FERRAMENTA NOT IN 
                                (SELECT ID_FERRAMENTA FROM REGISTROS WHERE DT_EMPRESTIMO <= ? AND DT_DEVOLUCAO >= ?)""", 
                                (nome, id_categoria, data_devolucao, data_emprestimo))
 
             ferramentas_disponiveis = cursor.fetchall()
             return [self.ferramenta_to_dict(x) for x in ferramentas_disponiveis] if ferramentas_disponiveis else []
+        
+    def buscar_item(self, id: int):
+        """
+        Busca ferramenta por id.
+
+        Args:
+            id (int): Id da ferramenta.
+
+        Returns:
+            list[dict]: Lista de ferramentas disponíveis.
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            
+            cursor.execute("""SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA 
+                           JOIN USUARIOS ON USUARIOS.ID_USUARIO = FERRAMENTAS.ID_USUARIO
+                               WHERE FERRAMENTAS.ID_FERRAMENTA = ? LIMIT 1""", (id,))
+
+            ferramenta = cursor.fetchone()
+            return self.ferramenta_to_dict(ferramenta)
 
     def remover_item(self, id_ferramenta: int):
         """
