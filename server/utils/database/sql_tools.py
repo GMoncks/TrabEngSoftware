@@ -160,7 +160,7 @@ class ComunicacaoBanco:
             usuario = cursor.fetchone()
             return {"exists": bool(usuario)}
 
-    def cadastrar_ferramenta(self, id_usuario: int, nome: str, descricao: str, id_categoria: str):
+    def cadastrar_ferramenta(self, id_usuario: int, nome: str, descricao: str, id_categoria: str, foto: str):
         """
         Cadastra uma nova ferramenta no banco de dados.
 
@@ -175,8 +175,8 @@ class ComunicacaoBanco:
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO FERRAMENTAS (ID_USUARIO, NOME, DESCRICAO, ID_CATEGORIA) VALUES (?, ?, ?, ?)",
-                           (id_usuario, nome, descricao, id_categoria))
+            cursor.execute("INSERT INTO FERRAMENTAS (ID_USUARIO, NOME, DESCRICAO, ID_CATEGORIA, FOTO) VALUES (?, ?, ?, ?, ?)",
+                           (id_usuario, nome, descricao, id_categoria, foto))
             conn.commit()
 
     def buscar_ferramentas(self, nome: str = None, id_categoria: int = None, data_emprestimo: str = None, data_devolucao: str = None, id_dono: int = None):
@@ -264,24 +264,41 @@ class ComunicacaoBanco:
             ferramenta = cursor.fetchone()
             return self.ferramenta_to_dict(ferramenta)
 
-    def remover_item(self, id_ferramenta: int):
+    def remover_item(self, id_ferramenta: int, id_usuario: int):
         """
-        Remove uma ferramenta do banco de dados.
+        Remove uma ferramenta do banco de dados se o usuário for o dono ou um admin.
 
         Args:
             id_ferramenta (int): ID da ferramenta.
-
-        Returns:
-            None
+            id_usuario (int): ID do usuário que está removendo a ferramenta.
 
         Raises:
-            Exception: Se a ferramenta não existir.
+            Exception: Se a ferramenta não existir ou o usuário não tiver permissão.
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM FERRAMENTAS WHERE ID_FERRAMENTA=?", (id_ferramenta,))
-            if cursor.fetchone() is None:
+
+            # Verifica se a ferramenta existe e obtém o id do dono
+            cursor.execute("SELECT ID_USUARIO FROM FERRAMENTAS WHERE ID_FERRAMENTA=?", (id_ferramenta,))
+            resultado = cursor.fetchone()
+            if resultado is None:
                 raise Exception("Ferramenta não encontrada.")
+            
+            id_dono = resultado[0]
+
+            # Verifica se o usuário é admin
+            cursor.execute("SELECT ADMIN FROM USUARIOS WHERE ID_USUARIO=?", (id_usuario,))
+            resultado = cursor.fetchone()
+            if resultado is None:
+                raise Exception("Usuário não encontrado.")
+
+            is_admin = resultado[0] == 1
+
+            # Só permite deletar se for dono ou admin
+            if id_usuario != id_dono and not is_admin:
+                raise Exception("Você não tem permissão para excluir esta ferramenta.")
+
+            # Deleta a ferramenta
             cursor.execute("DELETE FROM FERRAMENTAS WHERE ID_FERRAMENTA=?", (id_ferramenta,))
             conn.commit()
 

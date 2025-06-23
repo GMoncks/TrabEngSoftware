@@ -27,9 +27,10 @@ def cadastrar_ferramenta():
             int(request.form['id_usuario']),
             request.form['nome'],
             request.form['descricao'],
-            request.form['email']
+            request.form['id_categoria'],
+            request.form['foto']
         )
-        return jsonify({"message": "Ferramenta cadastrada com sucesso!"}), 201
+        return jsonify({"message": "Ferramenta cadastrada com sucesso!"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
@@ -76,8 +77,12 @@ def confirmar_devolucao():
 def remover_ferramenta():
     # TODO : Implementar autenticação para garantir que apenas administradores possam remover ferramentas ou usuários donos da ferramenta
     try:
-        id_ferramenta = int(request.form['id_ferramenta'])
-        banco.remover_item(id_ferramenta)
+
+        banco.remover_item(
+            id_ferramenta = int(request.form['id_ferramenta']),
+            id_usuario = int(request.form['id_usuario'])  # ID do usuário que está removendo
+            )
+        
         return jsonify({"message": "Ferramenta removida com sucesso!"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
