@@ -82,14 +82,15 @@ layout = dbc.Container([
     State("input-name", "value"),
     State("input-cpf", "value"),
     State("input-phone", "value"),
+    State("user-store", "data"),
     prevent_initial_call=True
 )
-def cadastrar(n_clicks, email, password, home_id, name, cpf, phone):    
+def cadastrar(n_clicks, email, password, home_id, name, cpf, phone, usuario):    
     try:
         if n_clicks:
             exists = login_requests.validar_usuario(email)
             if not exists["exists"]:
-                login_requests.cadastrar_usuario(email, password, home_id, name, cpf, phone)
+                login_requests.cadastrar_usuario(usuario["id_usuario"], email, password, home_id, name, cpf, phone)
                 return [
                     html.H5("Cadastro realizado com sucesso!", className="alert-heading"),
                     html.P(f"Identificação: {home_id}"),
