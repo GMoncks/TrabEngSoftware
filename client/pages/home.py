@@ -125,8 +125,8 @@ def atualizar_resultado(busca, data_inicio, data_fim, id_categoria):
                     html.Img(
                         src=f["foto"],
                         style={
-                            "maxWidth": "150px",
-                            "height": "auto"
+                            "max-width": "200px",
+                            "min-height": "200px"
                         }
                     ),
                     className="d-flex justify-content-center mb-3"
