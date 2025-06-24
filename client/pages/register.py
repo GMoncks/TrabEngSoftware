@@ -67,7 +67,7 @@ layout = dbc.Container([
         html.Hr(),
 
         html.Div([
-            dbc.Alert(id="alert", is_open=False, duration=4000)
+            dbc.Alert(id="alert", is_open=False, duration=4000, style={"textAlign": "center", "marginTop": "20px"}, color="info")
             ], 
             id="output", 
             className="mt-3"
@@ -96,6 +96,15 @@ def cadastrar(n_clicks, email, password, home_id, name, cpf, phone, usuario):
         if n_clicks:
             if not email or not password or not home_id or not name or not cpf or not phone:
                 return "Todos os campos são obrigatórios.", "warning", True
+
+            if len(cpf.replace(".", "").replace("-", "")) != 11:
+                return "CPF inválido. Deve conter 11 dígitos.", "danger", True
+            if not cpf.replace(".", "").replace("-", "").isdigit():
+                return "CPF inválido. Deve conter apenas números.", "danger", True
+            if len(phone.replace("(", "").replace(")", "").replace("-", "").replace(" ", "")) < 10:
+                return "Telefone inválido. Deve conter pelo menos 10 dígitos.", "danger", True
+            if email.count("@") != 1 or email.count(".") < 1:
+                return "Email inválido. Deve conter um '@' e pelo menos um '.'", "danger", True
             exists = login_requests.validar_usuario(email)
             if not exists["exists"]:
                 login_requests.cadastrar_usuario(usuario["id_usuario"], email, password, home_id, name, cpf, phone)
