@@ -66,7 +66,12 @@ layout = dbc.Container([
 
         html.Hr(),
 
-        html.Div([dbc.Alert(id="alert")], id="output", className="mt-3")
+        html.Div([
+            dbc.Alert(id="alert", is_open=False, duration=4000)
+            ], 
+            id="output", 
+            className="mt-3"
+            )
     ], fluid=True)
 
 
@@ -75,6 +80,7 @@ layout = dbc.Container([
 @callback(
     Output("alert", "children"),
     Output("alert", "color"),
+    Output("alert", "is_open"),
     Input("btn-submit", "n_clicks"),
     State("input-email", "value"),
     State("input-password", "value"),
@@ -88,6 +94,8 @@ layout = dbc.Container([
 def cadastrar(n_clicks, email, password, home_id, name, cpf, phone, usuario):    
     try:
         if n_clicks:
+            if not email or not password or not home_id or not name or not cpf or not phone:
+                return "Todos os campos são obrigatórios.", "warning", True
             exists = login_requests.validar_usuario(email)
             if not exists["exists"]:
                 login_requests.cadastrar_usuario(usuario["id_usuario"], email, password, home_id, name, cpf, phone)
@@ -98,10 +106,10 @@ def cadastrar(n_clicks, email, password, home_id, name, cpf, phone, usuario):
                     html.P(f"CPF: {cpf}"),
                     html.P(f"Email: {email}"),
                     html.P(f"Telefone: {phone}")
-                ], "success"
+                ], "success", True
             else:
-                return [html.H5("Usuário já existe.")], "danger"
+                return "Usuário já existe.", "danger", True
 
     except Exception as e:
-        return [html.H5(f"Erro ao cadastrar usuário: {e}")], "danger"
+        return f"Erro ao cadastrar usuário: {e}", "danger", True
    
