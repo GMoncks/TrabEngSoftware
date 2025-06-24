@@ -34,7 +34,9 @@ layout = html.Div([
                 start_date_placeholder_text="Início",
                 end_date_placeholder_text="Fim",
                 display_format='DD/MM/YYYY',
-                style={"height":"50px"}
+                style={"height":"50px"},
+                start_date=datetime.datetime.now().date().strftime('%Y-%m-%d'),
+                end_date=(datetime.datetime.now() + datetime.timedelta(days=7)).date().strftime('%Y-%m-%d')
             )
         ]),
 
@@ -98,8 +100,9 @@ layout = html.Div([
     Input("data-disponibilidade", "start_date"),
     Input("data-disponibilidade", "end_date"),
     Input("input-categoria", "value"),
+    Input("modal-emprestimo", "is_open")
 )
-def atualizar_resultado(busca, data_inicio, data_fim, id_categoria):
+def atualizar_resultado(busca, data_inicio, data_fim, id_categoria, modal_open):
     ferramentas = tool_requests.consultar_ferramentas(busca, id_categoria, data_inicio, data_fim)
 
     if not ferramentas:
@@ -221,10 +224,20 @@ def fechar_modal(cancelar):
     prevent_initial_call=True
 )
 def confirmar_emprestimo(n_clicks, tool_name, start_date, end_date, usuario, id_ferramenta):
-    if login_requests.validar_admin(usuario['id_usuario']):
+    print(f"Confirmar empréstimo: {tool_name}, Início: {start_date}, Fim: {end_date}, Usuário: {usuario['id_usuario']}, ID Ferramenta: {id_ferramenta}")
+
+    start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date() if start_date else None
+    end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date() if end_date else None
+
+    if login_requests.validar_admin(usuario['id_usuario'])['is_admin']:
         return no_update, dbc.Alert("Administrador não pode solicitar empréstimos.", color="warning")
     if not tool_name or not start_date or not end_date:
         return no_update, dbc.Alert("Preencha todos os campos antes de confirmar o empréstimo.", color="warning")
+
+    if start_date > end_date:
+        return no_update, dbc.Alert("A data de início não pode ser posterior à data de fim.", color="warning")
+    if start_date < datetime.datetime.now().date():
+        return no_update, dbc.Alert("A data de início não pode ser anterior à data atual.", color="warning")
 
     try:
         loan_requests.solicitar_emprestimo(usuario['id_usuario'], id_ferramenta, start_date, end_date)  # true ou false
