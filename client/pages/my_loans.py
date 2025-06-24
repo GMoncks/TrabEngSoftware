@@ -9,8 +9,8 @@ from utils.enums.categorias import Tool
 register_page(
     __name__,
     path="/my_loans",
-    title="Emprestar",
-    name="Emprestar",
+    title="Martelo Amigo - Meus Empréstimos",
+    name="Meus Empréstimos",
 )
 
 layout = html.Div([

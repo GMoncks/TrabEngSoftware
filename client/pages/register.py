@@ -6,7 +6,7 @@ from main import login_requests
 register_page(
     __name__,
     path="/register",
-    title="Cadastro de Morador",
+    title="Martelo Amigo - Cadastro de Morador",
     name="Cadastro de Morador",
 )
 

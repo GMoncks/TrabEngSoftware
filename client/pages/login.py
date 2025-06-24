@@ -7,9 +7,8 @@ import dash_bootstrap_components as dbc
 register_page(
     __name__,
     path="/login",
-    title="Login",
+    title="Martelo Amigo - Login",
     name="Login",
-    description="Tela de login do sistema.",
 )
 
 layout = dbc.Container(

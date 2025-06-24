@@ -8,7 +8,7 @@ from utils.enums.categorias import Tool
 register_page(
     __name__,
     path="/my_tools",
-    title="Minhas Ferramentas",
+    title="Martelo Amigo - Minhas Ferramentas",
     name="Minhas Ferramentas",
 )
 

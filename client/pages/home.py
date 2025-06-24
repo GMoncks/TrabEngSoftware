@@ -9,8 +9,8 @@ from main import tool_requests, loan_requests, login_requests
 register_page(
     __name__,
     path="/home",
-    title="Martelo Amigo",
-    name="home",
+    title="Martelo Amigo - Buscar Ferramentas",
+    name="Buscar Ferramentas",
 )
 
 layout = html.Div([
