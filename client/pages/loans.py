@@ -75,7 +75,7 @@ def carregar_emprestimos(_, user_data):
                             "borderBottomRightRadius": "0.25rem",
                         })
     
-    cards = [criar_card_emprestimo(emp) for emp in emprestimos]
+    cards = [criar_card_emprestimo(emp) for emp in emprestimos[::-1]]
 
     return [cabecalho] + cards
 
