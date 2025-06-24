@@ -111,10 +111,12 @@ def carregar_ferramentas(n_clicks_cadastrar, n_clicks_excluir, pathname, user_da
         return html.P("Nenhuma ferramenta cadastrada.")
     
     df = pd.DataFrame(ferramentas)
-    df.drop(columns=["id_usuario", "id_categoria", "foto"], inplace=True)
+   
+    df = df[["descricao", "dt_cadastro", "ferramenta_disponivel", "id_ferramenta", "nome", "id_categoria", "nome_usuario"]]
     df.columns = ["Descrição", "Data de Cadastro", "Disponível", "ID", "Nome", "Categoria", "Dono"]
     df = df[["ID", "Nome", "Descrição", "Categoria", "Data de Cadastro", "Disponível", "Dono"]]
     df["Disponível"] = df["Disponível"].apply(lambda x: "Sim" if x else "Não")
+    df["Categoria"] = df["Categoria"].apply(lambda x: Tool.from_value(int(x)).label() if x else "Não definida")
     
     return dbc.Table.from_dataframe(
         pd.DataFrame(df),
@@ -171,4 +173,4 @@ def excluir_ferramenta(n_clicks, id_ferramenta, user_data):
         tool_requests.remover_ferramenta(id_ferramenta=id_ferramenta, id_usuario=user_data["id_usuario"])
         return f"Ferramenta ID {id_ferramenta} removida com sucesso!", "success", True
     except Exception as e:
-        return f"Erro ao remover: {e}", "danger", True
+        return f"Erro: {e}", "danger", True
