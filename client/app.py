@@ -54,7 +54,7 @@ app.layout = dbc.Container(id="main-container", fluid=True, children=[
             dbc.Button("Buscar Ferramentas",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/home", id="btn-home"),
             dbc.Button("Minhas Ferramentas",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/my_tools", id="btn-my-tools"),
             dbc.Button("Emprestar",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/my_loans", id="btn-my-loans"),
-            dbc.Button("Pedir Emprestado",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/loans", id="btn-loans"),
+            dbc.Button("Pedidos de Empréstimo",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/loans", id="btn-loans"),
             dbc.Button("Cadastro",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/register", id="btn-register"),
             dbc.Button("Sair",n_clicks=0, color="primary", style=custom_css["sidebar_link"], className="w-100 text-start", href="/login", id="btn-logout"),
                 ], id="menu_links")
