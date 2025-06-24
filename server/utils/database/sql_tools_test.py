@@ -111,17 +111,25 @@ def test_usuario_to_dict_and_ferramenta_to_dict_and_registro_to_dict(banco):
     assert user_dict["email"] == "user1@example.com"
     # Test ferramenta_to_dict
     with sqlite3.connect(banco.db_path) as conn:
-        ferramenta = conn.execute("""SELECT * FROM FERRAMENTAS JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA 
-                           JOIN USUARIOS ON USUARIOS.ID_USUARIO = FERRAMENTAS.ID_USUARIO WHERE FERRAMENTAS.NOME=?""", ("hammer",)).fetchone()
+        ferramenta = conn.execute("""SELECT * FROM FERRAMENTAS 
+            JOIN CATEGORIAS ON CATEGORIAS.ID_CATEGORIA = FERRAMENTAS.ID_CATEGORIA 
+            JOIN USUARIOS ON USUARIOS.ID_USUARIO = FERRAMENTAS.ID_USUARIO 
+            WHERE FERRAMENTAS.NOME=?""", ("hammer",)).fetchone()
     ferramenta_dict = banco.ferramenta_to_dict(ferramenta)
     assert ferramenta_dict["nome"] == "hammer"
     # Test registro_to_dict
     with sqlite3.connect(banco.db_path) as conn:
-        registro = conn.execute("""SELECT R.*, F.*, U.NOME, F.ID_USUARIO as ID_USUARIO_DONO FROM REGISTROS R
-                    JOIN FERRAMENTAS F ON R.ID_FERRAMENTA = F.ID_FERRAMENTA
-                    JOIN USUARIOS U ON U.ID_USUARIO = F.ID_USUARIO""").fetchone()
+        user_id = conn.execute("SELECT ID_USUARIO FROM USUARIOS WHERE EMAIL=?", ("user2@example.com",)).fetchone()[0]
+        registro = conn.execute("""
+            SELECT R.*, F.*, UR.NOME, UF.NOME as NOME_DONO, F.ID_USUARIO as ID_USUARIO_DONO
+            FROM REGISTROS R
+            JOIN FERRAMENTAS F ON R.ID_FERRAMENTA = F.ID_FERRAMENTA
+            JOIN USUARIOS UF ON UF.ID_USUARIO = F.ID_USUARIO
+            JOIN USUARIOS UR ON UR.ID_USUARIO = R.ID_USUARIO
+            WHERE R.ID_USUARIO=? LIMIT 1
+        """, (user_id,)).fetchone()
     registro_dict = banco.registro_to_dict(registro)
-    assert registro_dict["id_usuario"] == 1
+    assert registro_dict["id_usuario"] == user_id
 
 def test_cadastrar_usuario_and_validar_login(banco):
     banco.cadastrar_usuario("test2@email.com", "pw123", "home", "Test Two", "cpf2", "phone2")
@@ -137,12 +145,12 @@ def test_validar_login_wrong_password(banco):
 
 def test_cadastrar_ferramenta_and_remover(banco):
     user_id = 1
-    banco.cadastrar_ferramenta(user_id, "serrote", "Serrote de corte", 1)
+    banco.cadastrar_ferramenta(user_id, "serrote", "Serrote de corte", 1, "http://example.com/serrote.jpg")
     with sqlite3.connect(banco.db_path) as conn:
         ferramenta = conn.execute("SELECT * FROM FERRAMENTAS WHERE NOME=?", ("serrote",)).fetchone()
         assert ferramenta is not None
         ferramenta_id = ferramenta[0]
-    banco.remover_item(ferramenta_id)
+    banco.remover_item(ferramenta_id, user_id)
     with sqlite3.connect(banco.db_path) as conn:
         ferramenta = conn.execute("SELECT * FROM FERRAMENTAS WHERE ID_FERRAMENTA=?", (ferramenta_id,)).fetchone()
         assert ferramenta is None
