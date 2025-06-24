@@ -100,11 +100,14 @@ layout = html.Div([
     Input("data-disponibilidade", "start_date"),
     Input("data-disponibilidade", "end_date"),
     Input("input-categoria", "value"),
-    Input("modal-emprestimo", "is_open")
+    Input("modal-emprestimo", "is_open"),
+    State("user-store", "data")
 )
-def atualizar_resultado(busca, data_inicio, data_fim, id_categoria, modal_open):
+def atualizar_resultado(busca, data_inicio, data_fim, id_categoria, modal_aberto, usuario):
     ferramentas = tool_requests.consultar_ferramentas(busca, id_categoria, data_inicio, data_fim)
-
+    
+    ferramentas = [item for item in ferramentas if item.get("id_usuario") != usuario["id_usuario"]]
+    
     if not ferramentas:
         return html.P("Nenhuma ferramenta encontrada.", className="text-muted")
 
