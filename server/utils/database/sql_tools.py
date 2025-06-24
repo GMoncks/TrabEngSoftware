@@ -399,6 +399,7 @@ class ComunicacaoBanco:
                 cursor.execute("""UPDATE FERRAMENTAS SET FERRAMENTA_DISPONIVEL = 1
                                WHERE ID_FERRAMENTA = (SELECT ID_FERRAMENTA FROM REGISTROS WHERE ID_REGISTRO=?)""", 
                                (id_registro,))
+                cursor.execute("UPDATE REGISTROS SET DT_DEVOLUCAO=DATETIME('now', '-3 hours') WHERE ID_REGISTRO=?", (id_registro,))
             conn.commit()
 
     def registrar_devolucao(self, id_registro: int):
@@ -417,6 +418,7 @@ class ComunicacaoBanco:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("UPDATE REGISTROS SET ID_STATUS=4 WHERE ID_REGISTRO=?", (id_registro,))
+            cursor.execute("UPDATE REGISTROS SET DT_DEVOLUCAO=DATETIME('now', '-3 hours') WHERE ID_REGISTRO=?", (id_registro,))
             cursor.execute("""UPDATE FERRAMENTAS SET FERRAMENTA_DISPONIVEL=1 WHERE ID_FERRAMENTA = 
                            (SELECT ID_FERRAMENTA FROM REGISTROS WHERE ID_REGISTRO=?)""", (id_registro,))
             conn.commit()
